@@ -1,1 +1,1 @@
-# mel.js
+# js-of-melange
