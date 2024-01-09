@@ -1,13 +1,11 @@
 {
-  "name": "melange-ffi",
+  "name": "mel-js",
   "version": "0.0.1",
   "description": "",
   "main": "src/melange-ffi.mjs",
   "type": "module",
   "types": "src/melange-ffi.d.ts",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "author": "Dillon Mulroy <dillon.mulroy@gmail.com>",
   "license": "MIT",
   "devDependencies": {
