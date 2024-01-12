@@ -17,7 +17,7 @@
     "./**/*.mjs",
     "./**/*.d.ts",
     "src/melange-ffi.d.mts"
-  ],
+, "test.ts"  ],
   "exclude": [
     "node_modules"
   ]
