@@ -14,7 +14,9 @@
   },
   "include": [
     "./**/*.js",
-    "./**/*.d.ts"
+    "./**/*.mjs",
+    "./**/*.d.ts",
+    "src/melange-ffi.d.mts"
   ],
   "exclude": [
     "node_modules"

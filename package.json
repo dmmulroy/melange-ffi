@@ -1,10 +1,14 @@
 {
-  "name": "mel-js",
+  "name": "melange-ffi",
   "version": "0.0.1",
   "description": "",
-  "main": "src/melange-ffi.mjs",
+  "repository": {
+    "type": "git",
+    "url": "github.com/dmmulroy/melange-ffi"
+  },
   "type": "module",
-  "types": "src/melange-ffi.d.ts",
+  "main": "src/melange-ffi.mjs",
+  "types": "src/melange-ffi.d.mts",
   "scripts": {},
   "author": "Dillon Mulroy <dillon.mulroy@gmail.com>",
   "license": "MIT",

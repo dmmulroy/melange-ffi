@@ -1,6 +1,4 @@
-export as namespace melange_js_ffi;
-
-export namespace Brand {
+declare namespace Brand {
   const BRAND: unique symbol;
   type t<_T, B> = { [BRAND]: B };
 }
@@ -43,6 +41,7 @@ export namespace List {
   type t<T> = Brand.t<T, "List">;
   function length<T>(list: t<T>): number;
   function ofArray<T>(array: T[]): t<T>;
+  function toArray<T>(list: t<T>): T[];
   function empty<T>(): t<T>;
   function isEmpty<T>(list: t<T>): boolean;
   function head<T>(list: t<T>): T;

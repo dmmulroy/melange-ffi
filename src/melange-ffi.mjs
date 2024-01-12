@@ -82,6 +82,9 @@ export const List = {
   ofArray(array) {
     return Melange_array.to_list(array);
   },
+  toArray(list) {
+    return Melange_array.of_list(list);
+  },
   empty() {
     return ofArray([]);
   },
