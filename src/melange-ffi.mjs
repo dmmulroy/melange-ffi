@@ -40,6 +40,9 @@ export const Option = {
   unwrapOr(option, defaultValue) {
     return Melange_option.value(option, defaultValue);
   },
+  unwrap(option) {
+    return Melange_option.get(option);
+  },
   toResult(value, error) {
     return Melange_option.to_result(value, error);
   },

@@ -7,15 +7,16 @@ export function curry(fn: Function): Function;
 
 export namespace Option {
   type t<T> = Brand.t<T, "Option">;
-  function some<T>(value: T): t<T>;
-  function isSome<T>(value: t<T>): boolean;
-  function isNone<T>(value: t<T>): boolean;
-  function none<T>(): t<T>;
-  function isOption<T>(value: t<T>): boolean;
-  function map<T, U>(fn: (value: T) => U, option: t<T>): t<U>;
-  function then<T, U>(fn: (value: T) => t<U>, option: t<T>): t<U>;
-  function unwrapOr<T>(option: t<T>, defaultValue: T): T;
-  function toResult<T, E>(value: t<T>, error: E): Result.t<T, E>;
+  function some<T>(value: T): Option.t<T>;
+  function isSome<T>(value: Option.t<T>): boolean;
+  function isNone<T>(value: Option.t<T>): boolean;
+  function none<T>(): Option.t<T>;
+  function isOption<T>(value: Option.t<T>): boolean;
+  function map<T, U>(fn: (value: T) => U, option: Option.t<T>): Option.t<U>;
+  function then<T, U>(fn: (value: T) => t<U>, option: Option.t<T>): Option.t<U>;
+  function unwrapOr<T>(option: Option.t<T>, defaultValue: T): T;
+  function unwrap<T>(option: Option.t<T>): T;
+  function toResult<T, E>(value: Option.t<T>, error: E): Result.t<T, E>;
 }
 
 export namespace Result {
@@ -40,29 +41,32 @@ export namespace Result {
 
 export namespace List {
   type t<T> = Brand.t<T, "List">;
-  function length<T>(list: t<T>): number;
-  function ofArray<T>(array: T[]): t<T>;
-  function toArray<T>(list: t<T>): T[];
-  function empty<T>(): t<T>;
-  function isEmpty<T>(list: t<T>): boolean;
-  function head<T>(list: t<T>): T;
-  function tail<T>(list: t<T>): t<T>;
-  function prepend<T>(value: T, list: t<T>): t<T>;
-  function append<T>(value: T, list: t<T>): t<T>;
-  function at<T>(index: number, list: t<T>): Result.t<T, string>;
+  function length<T>(list: List.t<T>): number;
+  function ofArray<T>(array: T[]): List.t<T>;
+  function toArray<T>(list: List.t<T>): T[];
+  function empty<T>(): List.t<T>;
+  function isEmpty<T>(list: List.t<T>): boolean;
+  function head<T>(list: List.t<T>): T;
+  function tail<T>(list: List.t<T>): List.t<T>;
+  function prepend<T>(value: T, list: List.t<T>): List.t<T>;
+  function append<T>(value: T, list: List.t<T>): List.t<T>;
+  function at<T>(index: number, list: List.t<T>): Result.t<T, string>;
   function find<T>(
     predicate: (value: T) => boolean,
-    list: t<T>,
+    list: List.t<T>,
   ): Result.t<T, string>;
-  function map<T, U>(fn: (value: T, index: number) => U, list: t<T>): t<U>;
+  function map<T, U>(fn: (value: T, index: number) => U, list: t<T>): List.t<U>;
   function filter<T>(
     predicate: (value: T, index: number) => boolean,
-    list: t<T>,
-  ): t<T>;
-  function filterMap<T, U>(fn: (value: T) => U | null, list: t<T>): t<U>;
+    list: List.t<T>,
+  ): List.t<T>;
+  function filterMap<T, U>(
+    fn: (value: T) => U | null,
+    list: List.t<T>,
+  ): List.t<U>;
   function reduce<T, U>(
     fn: (acc: U, value: T, index: number) => U,
     acc: U,
-    list: t<T>,
+    list: List.t<T>,
   ): U;
 }
