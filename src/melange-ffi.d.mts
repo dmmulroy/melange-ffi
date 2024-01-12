@@ -34,7 +34,8 @@ export namespace Result {
     fn: (value: T) => Result.t<U, E>,
     result: Result.t<T, E>,
   ): Result.t<U, E>;
-  function unwrapOr<T, E>(result: Result.t<T, E>, defaultValue: T): T;
+  function unwrapOr<T, E>(defaultValue: T, result: Result.t<T, E>): T;
+  function unwrap<T, E>(result: Result.t<T, E>, defaultValue: T): T;
 }
 
 export namespace List {

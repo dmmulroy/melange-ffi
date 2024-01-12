@@ -70,8 +70,11 @@ export const Result = {
   then(fn, result) {
     return Melange_result.bind(result, fn);
   },
-  unwrapOr(result, defaultValue) {
+  unwrapOr(defaultValue, result) {
     return Melange_result.value(result, defaultValue);
+  },
+  unwrap(result) {
+    return Melange_result.get_ok(result);
   },
 };
 
