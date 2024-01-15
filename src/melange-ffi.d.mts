@@ -9,7 +9,7 @@ type Brand<_T, B> = { [BRAND]: B };
  * @param {Function} fn - The function to be curried.
  * @returns {Function} A curried version of the input function.
  *
- * Example:
+ * @example
  * ```javascript
  * const add = (a, b) => a + b;
  * const curriedAdd = curry(add);
@@ -248,11 +248,43 @@ export namespace Result {
   function unwrap<T, E>(result: Result<T, E>): T;
 }
 
+type UnionToIntersection<Union> = (
+  Union extends any ? (argument: Union) => void : never
+) extends (argument: infer Intersection) => void
+  ? Intersection
+  : never;
+
+type IsSingleType<T> = [T] extends [UnionToIntersection<T>] ? true : false;
+
+type SingleTypeOf<T> = IsSingleType<T> extends true ? T : never;
+
+/**
+ * Represents an array of a single type.
+ * @template T The type of elements in the array.
+ */
+export type ArrayOf<T> = Array<SingleTypeOf<T>>;
+
+/**
+ * Represents an array of a single type or another array of the same type.
+ * @template T The type of elements in the array and or nested array.
+ *
+ * @example
+ * const nestedNumberArray = [1, 2, [3, [4, 5]]]
+ */
+export type NestableArrayOf<T> = Array<SingleTypeOf<T> | NestableArrayOf<T>>;
+
 /**
  * Represents a linked list type.
  * @template T The type of elements in the list.
  */
-type List<T> = Brand<T, "List">;
+export type List<T> = Brand<T, "List">;
+
+/**
+ * Represents a homogenous array type.
+ * @template T The type of elements in the array.
+ *
+ * @example [1, 2, [3, [4, 5]]] is a HomogenousArray<number>
+ */
 
 export namespace List {
   /**
@@ -269,7 +301,7 @@ export namespace List {
    * @param {T[]} array The array to convert.
    * @returns {List<T>} A new List containing the elements of the array.
    */
-  function ofArray<T>(array: T[]): List<T>;
+  function ofArray<T>(array: ArrayOf<T>[]): List<T>;
 
   /**
    * Converts a List to an array.
@@ -293,6 +325,14 @@ export namespace List {
    * @returns {boolean} True if the list is empty, false otherwise.
    */
   function isEmpty<T>(list: List<T>): boolean;
+
+  /**
+   * Checks if a value is a List.
+   * @template T The type of elements in the list.
+   * @param {unknown} maybeList The value to check.
+   * @returns {boolean} True if the value is a List, false otherwise.
+   */
+  function isList(maybeList: unknown): boolean;
 
   /**
    * Retrieves the first element of the list.

@@ -97,6 +97,9 @@ export const List = {
   isEmpty(list) {
     return Melange_list.is_empty(list);
   },
+  isList(value) {
+    return value.hd !== undefined && value.tl !== undefined;
+  },
   head(list) {
     return Melange_list.hd(list);
   },
@@ -122,7 +125,10 @@ export const List = {
     return Option.toResult(maybeValue, "Not found");
   },
   map(fn, list) {
-    return Melange_list.mapi(fn, list);
+    function flippedFn(idx, value) {
+      return fn(value, idx);
+    }
+    return Melange_list.mapi(flippedFn, list);
   },
   filter(predicate, list) {
     return Melange_list.filteri(predicate, list);
