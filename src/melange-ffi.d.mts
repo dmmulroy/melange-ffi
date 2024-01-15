@@ -279,13 +279,6 @@ export type NestableArrayOf<T> = Array<SingleTypeOf<T> | NestableArrayOf<T>>;
  */
 export type List<T> = Brand<T, "List">;
 
-/**
- * Represents a homogenous array type.
- * @template T The type of elements in the array.
- *
- * @example [1, 2, [3, [4, 5]]] is a HomogenousArray<number>
- */
-
 export namespace List {
   /**
    * Gets the length of the list.
