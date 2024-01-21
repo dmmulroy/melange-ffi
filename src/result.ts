@@ -20,7 +20,8 @@ export type Ok<T> = Brand<T, typeof OK>;
 export type Error<E> = Brand<E, typeof ERROR>;
 
 /**
- * Represents a type that can either be a successful result (Ok) or an error result (Error).
+ * Represents a type that can either be a successful result (Ok) or an error
+ * result (Error).
  *
  * @template T The type of the successful value.
  * @template E The type of the error.
@@ -38,9 +39,6 @@ export const Result = {
    * @returns {Ok<T>} An Ok Result containing the value.
    */
   ok<T>(value: T): Ok<T> {
-    if (Result.isOk(value as Ok<T>)) {
-      return value as Ok<T>;
-    }
     return toBrandedType(Melange_result.ok(value), OK);
   },
 
@@ -80,12 +78,26 @@ export const Result = {
   },
 
   /**
+   * Checks if a value is a Result.
+   *
+   * @template T The type of the value in the Result.
+   * @template E The type of the error in the Result.
+   * @param {unknown} result The value to check.
+   * @returns {boolean} True if the value is a Result, false otherwise.
+   * @remarks This is a type guard function.
+   */
+  isResult<T, E>(result: unknown): result is Result<T, E> {
+    return Result.isOk(result as Ok<T>) || Result.isError(result as Error<E>);
+  },
+
+  /**
    * Converts a Result to an Option, discarding the error if present.
    *
    * @template T The type of the value in the Result.
    * @template E The type of the error in the Result.
    * @param {Result<T, E>} result The Result to convert.
-   * @returns {Option<T>} An Option containing the Ok value, or None if the Result is an Error.
+   * @returns {Option<T>} An Option containing the Ok value, or None if the
+   * Result is an Error.
    */
   toOption<T, E>(result: Result<T, E>): Option<T> {
     return Melange_result.to_option(result);
@@ -182,7 +194,8 @@ type ChainableOk<A> = Readonly<{
    *
    * @template B The type of the value in the new ChainableOk.
    * @param {(value: A) => B} fn The mapping function.
-   * @returns {ChainableOk<B>} A new ChainableOk with the value transformed by the function.
+   * @returns {ChainableOk<B>} A new ChainableOk with the value transformed by
+   * the function.
    */
   map<B>(fn: (value: A) => B): ChainableOk<B>;
 
@@ -192,19 +205,38 @@ type ChainableOk<A> = Readonly<{
    * @template B The type of the value in the new ChainableResult.
    * @template E The type of the error in the new ChainableResult.
    * @param {(value: A) => ChainableResult<B, E>} fn The function to apply.
-   * @returns {ChainableResult<B, E>} The new ChainableResult after applying the function.
+   * @returns {ChainableResult<B, E>} The new ChainableResult after applying the
+   * function.
    */
   then<B, E>(fn: (value: A) => ChainableResult<B, E>): ChainableResult<B, E>;
 
   /**
-   * Maps an error in a ChainableOk, which is ineffective as ChainableOk does not contain an error.
+   * Maps an error in a ChainableOk, which is ineffective as ChainableOk does
+   * not contain an error.
    *
    * @template F The type of the error in the new ChainableOk.
    * @param {(error: never) => F} fn The mapping function.
-   * @returns {ChainableOk<A>} The original ChainableOk, unaffected by the mapping function.
+   * @returns {ChainableOk<A>} The original ChainableOk, unaffected by the
+   * mapping function.
    */
   mapError<F>(fn: (error: never) => F): ChainableOk<A>;
 
+  /**
+   * Unwraps a Result, returning the default value if it is an Error.
+   *
+   * @template T The type of the value in the Result.
+   * @param {T} defaultValue The default value to use if the Result is an Error.
+   * @returns {T} The unwrapped value or the default value.
+   */
+  unwrapOr(defaultValue: A): A;
+
+  /**
+   * Unwraps a Result, throwing an error if it is an Error.
+   *
+   * @param {string} [message] The message to use for the error.
+   * @throws Will throw an error if the Result is an Error.
+   */
+  unwrap(message?: string): A;
   /**
    * Converts the ChainableOk to a ChainableOption.
    */
@@ -244,21 +276,25 @@ type ChainableError<E> = Readonly<{
   isError(): true;
 
   /**
-   * Maps a ChainableError, which is ineffective as ChainableError does not contain a value.
+   * Maps a ChainableError, which is ineffective as ChainableError does not
+   * contain a value.
    *
    * @template B The type of the value in the new ChainableError.
    * @param {(value: never) => B} fn The mapping function.
-   * @returns {ChainableError<E>} The original ChainableError, unaffected by the mapping function.
+   * @returns {ChainableError<E>} The original ChainableError, unaffected by the
+   * mapping function.
    */
   map(fn: never): ChainableError<E>;
 
   /**
-   * Applies a function to a ChainableError, which is ineffective as ChainableError does not contain a value.
+   * Applies a function to a ChainableError, which is ineffective as
+   * ChainableError does not contain a value.
    *
    * @template B The type of the value in the new ChainableResult.
    * @template E The type of the error in the new ChainableResult.
    * @param {(value: never) => ChainableResult<B, E>} fn The function to apply.
-   * @returns {ChainableError<E>} The original ChainableError, unaffected by the function.
+   * @returns {ChainableError<E>} The original ChainableError, unaffected by the
+   * function.
    */
   then(fn: never): ChainableError<E>;
 
@@ -267,9 +303,27 @@ type ChainableError<E> = Readonly<{
    *
    * @template F The type of the error in the new ChainableError.
    * @param {(error: E) => F} fn The mapping function.
-   * @returns {ChainableError<F>} A new ChainableError with the error transformed by the function.
+   * @returns {ChainableError<F>} A new ChainableError with the error
+   * transformed by the function.
    */
   mapError<F>(fn: (error: E) => F): ChainableError<F>;
+
+  /**
+   * Unwraps a Result, returning the default value if it is an Error.
+   *
+   * @template T The type of the value in the Result.
+   * @param {T} defaultValue The default value to use if the Result is an Error.
+   * @returns {T} The unwrapped value or the default value.
+   */
+  unwrapOr<T>(defaultValue: T): T;
+
+  /**
+   * Unwraps a Result, throwing an error if it is an Error.
+   *
+   * @param {string} [message] The message to use for the error.
+   * @throws Will throw an error if the Result is an Error.
+   */
+  unwrap(message?: string): void;
 
   /**
    * Converts the ChainableError to a ChainableOption.
@@ -313,6 +367,12 @@ export const ChainableResult = {
       mapError(fn) {
         return ChainableResult.error(fn(error));
       },
+      unwrapOr(defaultValue) {
+        return defaultValue;
+      },
+      unwrap(message) {
+        throw new Error(message ?? "Result was an errror");
+      },
       endChain() {
         if (Result.isError(error as Error<E>)) {
           return error as Error<E>;
@@ -341,6 +401,15 @@ export const ChainableResult = {
       mapError() {
         return self;
       },
+      unwrap() {
+        if (Result.isResult(value as Ok<A>)) {
+          return Result.unwrap(value as Ok<A>);
+        }
+        return value;
+      },
+      unwrapOr() {
+        return self.unwrap();
+      },
       endChain() {
         if (Result.isOk(value as Ok<A>)) {
           return value as Ok<A>;
@@ -353,3 +422,5 @@ export const ChainableResult = {
     return self;
   },
 };
+
+const myResult = Result.ok(5);
