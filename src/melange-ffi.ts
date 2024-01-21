@@ -1,19 +1,8 @@
+// @ts-nocheck
 import * as Melange_result from "../vendor/melange/result.mjs";
 import * as Melange_option from "../vendor/melange/option.mjs";
 import * as Melange_list from "../vendor/melange/list.mjs";
 import * as Melange_array from "../vendor/melange/array.mjs";
-
-export function curry(fn) {
-  return function curried(...args) {
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    } else {
-      return function (...args2) {
-        return curried.apply(this, args.concat(args2));
-      };
-    }
-  };
-}
 
 export const Option = {
   some(value) {
@@ -29,7 +18,7 @@ export const Option = {
     return Melange_option.none;
   },
   isOption(value) {
-    return isSome(value) || isNone(value);
+    return Option.isSome(value) || Option.isNone(value);
   },
   map(fn, option) {
     return Melange_option.map(fn, option);
@@ -62,7 +51,7 @@ export const Result = {
     return Melange_result.is_error(value);
   },
   isResult(value) {
-    return isOk(value) || isError(value);
+    return Result.isOk(value) || Result.isError(value);
   },
   toOption(result) {
     return Melange_result.to_option(result);
@@ -81,6 +70,31 @@ export const Result = {
   },
 };
 
+export type ChainableResult<T, E> = ChainableOk<T>;
+
+type ChainableOk<A> = Readonly<{
+  isOk<E>(): true;
+  isError<E>(): false;
+  map<B>(fn: (value: A) => B): ChainableOk<B>;
+  then<B, E>(fn: (value: A) => ChainableResult<B, E>): ChainableResult<B, E>;
+  mapError<F>(fn: (error: never) => F): ChainableOk<A>;
+  toOption(): void;
+  toChainableOption(): void;
+  value(): Ok<A>;
+}>;
+
+type ChainableError<E> = Readonly<{
+  isOk<E>(): false;
+  isError<E>(): true;
+  map<B>(fn: (value: never) => B): ChainableError<E>;
+  then<B, E>(fn: (value: never) => ChainableResult<B, E>);
+  mapError<F>(fn: (error: E) => F): ChainableError<F>;
+  toChainableOption(): void;
+  toOption(): void;
+  toChainableOption(): void;
+  value(): Error<E>;
+}>;
+
 export const List = {
   length(list) {
     return Melange_list.length(list);
@@ -92,7 +106,7 @@ export const List = {
     return Melange_array.of_list(list);
   },
   empty() {
-    return ofArray([]);
+    return List.ofArray([]);
   },
   isEmpty(list) {
     return Melange_list.is_empty(list);
@@ -104,7 +118,7 @@ export const List = {
     return Melange_list.hd(list);
   },
   tail(list) {
-    return Melange_list.last(list);
+    return Melange_list.tl(list);
   },
   prepend(value, list) {
     return Melange_list.cons(value, list);

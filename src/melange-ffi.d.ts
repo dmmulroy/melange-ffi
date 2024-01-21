@@ -2,6 +2,8 @@ declare const BRAND: unique symbol;
 
 type Brand<_T, B> = { [BRAND]: B };
 
+export type Nominal<B> = Brand<void, B>;
+
 /**
  * Transforms a function into a curried version of itself.
  * This allows a function with multiple arguments to be called as a sequence of functions, each with a single argument.
