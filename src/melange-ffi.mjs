@@ -4,6 +4,28 @@ import * as Melange_option from "../vendor/melange/option.mjs";
 import * as Melange_list from "../vendor/melange/list.mjs";
 import * as Melange_array from "../vendor/melange/array.mjs";
 
+export const Function = {
+  curry: (fn) => {
+    const curried = (...args) => {
+      if (args.length >= fn.length) {
+        return fn.apply(undefined, args);
+      } else {
+        return (...args2) => curried.apply(undefined, args.concat(args2));
+      }
+    };
+    return curried;
+  },
+};
+
+export const Types = {
+  toBrandedType(value, _brand) {
+    return value;
+  },
+  toNominalType(value, typeName) {
+    return toBrandedType(value, typeName);
+  },
+};
+
 export const Option = {
   some(value) {
     return Melange_option.some(value);
@@ -69,31 +91,6 @@ export const Result = {
     return Melange_result.get_ok(result);
   },
 };
-
-export type ChainableResult<T, E> = ChainableOk<T>;
-
-type ChainableOk<A> = Readonly<{
-  isOk<E>(): true;
-  isError<E>(): false;
-  map<B>(fn: (value: A) => B): ChainableOk<B>;
-  then<B, E>(fn: (value: A) => ChainableResult<B, E>): ChainableResult<B, E>;
-  mapError<F>(fn: (error: never) => F): ChainableOk<A>;
-  toOption(): void;
-  toChainableOption(): void;
-  value(): Ok<A>;
-}>;
-
-type ChainableError<E> = Readonly<{
-  isOk<E>(): false;
-  isError<E>(): true;
-  map<B>(fn: (value: never) => B): ChainableError<E>;
-  then<B, E>(fn: (value: never) => ChainableResult<B, E>);
-  mapError<F>(fn: (error: E) => F): ChainableError<F>;
-  toChainableOption(): void;
-  toOption(): void;
-  toChainableOption(): void;
-  value(): Error<E>;
-}>;
 
 export const List = {
   length(list) {

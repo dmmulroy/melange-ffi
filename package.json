@@ -2,16 +2,18 @@
   "name": "melange-ffi",
   "version": "0.0.7",
   "description": "",
-  "repository": {
-    "type": "git",
-    "url": "github.com/dmmulroy/melange-ffi"
-  },
+  "license": "MIT",
   "type": "module",
   "main": "src/melange-ffi.mjs",
   "types": "src/melange-ffi.d.mts",
-  "scripts": {},
+  "module": "src/melange-ffi.mjs",
+  "files": [
+    "src/melange-ffi.mjs",
+    "src/melange-ffi.d.mts"
+  ],
+  "repository": "https://github.com/dmmulroy/melange-ffi",
   "author": "Dillon Mulroy <dillon.mulroy@gmail.com>",
-  "license": "MIT",
+  "scripts": {},
   "devDependencies": {
     "typescript": "^5.3.3"
   }
