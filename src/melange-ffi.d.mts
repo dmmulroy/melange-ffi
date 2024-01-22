@@ -559,7 +559,7 @@ export type Error<E> = Brand<E, "Error">;
  * @template T The type of the successful value.
  * @template E The type of the error.
  */
-export type Result<T, E> = Brand<Ok<T>, "Ok"> | Brand<Error<E>, "Error">;
+export type Result<T, E> = Ok<T> | Error<E>;
 
 export namespace Result {
   /**
