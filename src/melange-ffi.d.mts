@@ -1,64 +1,21 @@
-export namespace Types {
-  /**
-   * A unique symbol used internally for creating branded types.
-   * This symbol acts as a unique tag for the brand, ensuring that each branded type is distinct.
-   *
-   * @const BRAND
-   */
-  const BRAND: unique symbol;
+/**
+ * A unique symbol used internally for creating branded types.
+ * This symbol acts as a unique tag for the brand, ensuring that each branded type is distinct.
+ *
+ * @const BRAND
+ */
+declare const BRAND: unique symbol;
 
-  /**
-   * Represents a branded type.
-   * A branded type is a base type (T) extended with a unique brand (B), making it distinct from the base type.
-   * This is used for creating types that are structurally identical to a base type but are treated as unique by the type system.
-   *
-   * @template T The base type to be branded.
-   * @template B The brand type, typically a string literal type that uniquely identifies the brand.
-   * @type {Brand<T, B>}
-   */
-  export type Brand<T, B> = T & { [BRAND]: B };
-
-  /**
-   * Represents a nominal type.
-   * Nominal types are a specific kind of branded type where the base type is `void`.
-   * They are useful for creating types that have no runtime representation but are distinct at the type level.
-   *
-   * @template B The brand for the nominal type, typically a unique string literal.
-   * @type {Nominal<B>}
-   */
-  export type Nominal<B> = Brand<void, B>;
-
-  /**
-   * Converts a given value to a branded type.
-   * This function takes a value of type T and a brand of type B and returns a new value that is
-   * of the branded type `Brand<T, B>`. The branded type ensures that the value is treated as unique
-   * in the type system, even though it is structurally the same as the original type.
-   *
-   * @template T The type of the value to be branded.
-   * @template B The type of the brand.
-   * @param {T} value The value to be branded.
-   * @param {B} _brand The brand to apply to the value. The underscore prefix indicates that this parameter is not used at runtime, but only for type inference.
-   * @returns {Brand<T, B>} The value as a branded type.
-   */
-  export function toBrandedType<T, B>(value: T, _brand: B): Brand<T, B>;
-
-  /**
-   * Converts a given value to a nominal type.
-   * This function takes a value of any type T and a typeName of type B, and returns a new value
-   * of the nominal type `Nominal<B>`. Nominal types are used to create types that are distinct at
-   * the type level but have no runtime representation. This is particularly useful for adding type
-   * safety by distinguishing between different types that would otherwise be structurally identical.
-   *
-   * @template T The type of the value being converted.
-   * @template B The type of the nominal type name.
-   * @param {T} value The value to be converted. This parameter is not used at runtime but is necessary for type inference.
-   * @param {B} typeName The name of the nominal type.
-   * @returns {Nominal<B>} The value as a nominal type.
-   */
-  export function toNominalType<T, B>(value: T, typeName: B): Nominal<B>;
-}
-
-type Brand<T, B> = Types.Brand<T, B>;
+/**
+ * Represents a branded type.
+ * A branded type is a base type (T) extended with a unique brand (B), making it distinct from the base type.
+ * This is used for creating types that are structurally identical to a base type but are treated as unique by the type system.
+ *
+ * @template T The base type to be branded.
+ * @template B The brand type, typically a string literal type that uniquely identifies the brand.
+ * @type {Brand<T, B>}
+ */
+type Brand<T, B> = T & { [BRAND]: B };
 
 export namespace Function {
   /**
