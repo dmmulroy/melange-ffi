@@ -58,6 +58,8 @@ export namespace Types {
   export function toNominalType<T, B>(value: T, typeName: B): Nominal<B>;
 }
 
+type Brand<T, B> = Types.Brand<T, B>;
+
 export namespace Function {
   /**
    * Represents a curried function with one argument.
@@ -435,12 +437,12 @@ export namespace Function {
  * Represents an option type, encapsulating an optional value.
  * @template T The type of the value.
  */
-export type Some<T> = Types.Brand<T, "Some">;
+export type Some<T> = Brand<T, "Some">;
 
 /**
  * Represents the absence of a value.
  */
-export type None = Types.Brand<undefined | null, "None">;
+export type None = Brand<undefined | null, "None">;
 
 /**
  * Represents an option which can either be Some or None.
@@ -544,22 +546,20 @@ export namespace Option {
  * Represents a successful result.
  * @template T The type of the successful value.
  */
-export type Ok<T> = Types.Brand<T, "Ok">;
+export type Ok<T> = Brand<T, "Ok">;
 
 /**
  * Represents an error result.
  * @template E The type of the error.
  */
-export type Error<E> = Types.Brand<E, "Error">;
+export type Error<E> = Brand<E, "Error">;
 
 /**
  * Represents a type that can either be a successful result (Ok) or an error result (Error).
  * @template T The type of the successful value.
  * @template E The type of the error.
  */
-export type Result<T, E> =
-  | Types.Brand<Ok<T>, "Ok">
-  | Types.Brand<Error<E>, "Error">;
+export type Result<T, E> = Brand<Ok<T>, "Ok"> | Brand<Error<E>, "Error">;
 
 export namespace Result {
   /**
@@ -692,7 +692,7 @@ export type NestableArrayOf<T> = Array<SingleTypeOf<T> | NestableArrayOf<T>>;
  * Represents a linked list type.
  * @template T The type of elements in the list.
  */
-export type List<T> = Types.Brand<T, "List">;
+export type List<T> = Brand<T, "List">;
 
 export namespace List {
   /**
