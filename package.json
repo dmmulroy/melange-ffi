@@ -9,7 +9,8 @@
   "module": "src/melange-ffi.mjs",
   "files": [
     "src/melange-ffi.mjs",
-    "src/melange-ffi.d.mts"
+    "src/melange-ffi.d.mts",
+    "vendor/*"
   ],
   "repository": "https://github.com/dmmulroy/melange-ffi",
   "author": "Dillon Mulroy <dillon.mulroy@gmail.com>",
