@@ -1,4 +1,3 @@
-// @ts-nocheck
 import * as Melange_result from "../vendor/melange/result.mjs";
 import * as Melange_option from "../vendor/melange/option.mjs";
 import * as Melange_list from "../vendor/melange/list.mjs";
@@ -14,15 +13,6 @@ export const Function = {
       }
     };
     return curried;
-  },
-};
-
-export const Types = {
-  toBrandedType(value, _brand) {
-    return value;
-  },
-  toNominalType(value, typeName) {
-    return toBrandedType(value, typeName);
   },
 };
 
