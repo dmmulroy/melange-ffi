@@ -27,10 +27,10 @@ function length<T>(list: List<T>): number {
 /**
  * Creates a List from an array.
  * @template T The type of elements in the array.
- * @param {ArrayOf<T>[]} array The array to convert.
+ * @param {ArrayOf<T>} array The array to convert.
  * @returns {List<T>} A new List containing the elements of the array.
  */
-function ofArray<T>(array: ArrayOf<T>[]): List<T> {
+function ofArray<T>(array: ArrayOf<T>): List<T> {
   return Melange_array.to_list(array) as unknown as List<T>;
 }
 

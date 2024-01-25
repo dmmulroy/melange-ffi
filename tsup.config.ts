@@ -6,7 +6,6 @@ export default defineConfig({
     index: "src/index.ts",
   },
   outDir: "dist",
-  // dts: true,
   sourcemap: true,
   clean: true,
   experimentalDts: true,
