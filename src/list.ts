@@ -219,20 +219,126 @@ function reduce<T, U>(
 }
 
 export const List = {
+  /**
+   * Gets the length of the list.
+   * @template T The type of elements in the list.
+   * @param {List<T>} list The list to get the length of.
+   * @returns {number} The length of the list.
+   */
   length,
+  /**
+   * Creates a List from an array.
+   * @template T The type of elements in the array.
+   * @param {ArrayOf<T>} array The array to convert.
+   * @returns {List<T>} A new List containing the elements of the array.
+   */
   ofArray,
+  /**
+   * Converts a List to an array.
+   * @template T The type of elements in the list.
+   * @param {List<T>} list The list to convert.
+   * @returns {T[]} An array containing the elements of the list.
+   */
   toArray,
+  /**
+   * Creates an empty List.
+   * @template T The type for the elements of the list.
+   * @returns {List<T>} An empty List.
+   */
   empty,
+  /**
+   * Checks if a List is empty.
+   * @template T The type of elements in the list.
+   * @param {List<T>} list The list to check.
+   * @returns {boolean} True if the list is empty, false otherwise.
+   */
   isEmpty,
+  /**
+   * Checks if a value is a List.
+   * @param {unknown} maybeList The value to check.
+   * @returns {boolean} True if the value is a List, false otherwise.
+   */
   isList,
+  /**
+   * Retrieves the first element of the list.
+   * @template T The type of elements in the list.
+   * @param {List<T>} list The list to retrieve the head from.
+   * @returns {T} The first element of the list.
+   */
   head,
+  /**
+   * Retrieves all elements of the list except the first.
+   * @template T The type of elements in the list.
+   * @param {List<T>} list The list to retrieve the tail from.
+   * @returns {List<T>} A new list containing all elements except the first.
+   */
   tail,
+  /**
+   * Prepends a value to the list.
+   * @template T The type of elements in the list.
+   * @param {T} value The value to prepend.
+   * @param {List<T>} list The list to prepend the value to.
+   * @returns {List<T>} A new list with the value prepended.
+   */
   prepend,
+  /**
+   * Appends a value to the list.
+   * @template T The type of elements in the list.
+   * @param {T} value The value to append.
+   * @param {List<T>} list The list to append the value to.
+   * @returns {List<T>} A new list with the value appended.
+   */
   append,
+  /**
+   * Retrieves the element at a specified index in the list.
+   * @template T The type of elements in the list.
+   * @param {number} index The index of the element to retrieve.
+   * @param {List<T>} list The list to retrieve the element from.
+   * @returns {Result<T, string>} A Result containing the element or an error message.
+   */
   at,
+  /**
+   * Finds an element in the list that satisfies a predicate.
+   * @template T The type of elements in the list.
+   * @param {(value: T) => boolean} predicate The function to test each element.
+   * @param {List<T>} list The list to search.
+   * @returns {Result<T, string>} A Result containing the found element or an error message.
+   */
   find,
+  /**
+   * Transforms the elements in the list using a function.
+   * @template T The type of elements in the original list.
+   * @template U The type of elements in the new list.
+   * @param {(value: T, index: number) => U} fn The function to apply to each element.
+   * @param {List<T>} list The original list.
+   * @returns {List<U>} A new list with transformed elements.
+   */
   map,
+  /**
+   * Filters the elements in the list based on a predicate.
+   * @template T The type of elements in the list.
+   * @param {(value: T, index: number) => boolean} predicate The function to test each element.
+   * @param {List<T>} list The original list.
+   * @returns {List<T>} A new list with elements that satisfy the predicate.
+   */
   filter,
+  /**
+   * Applies a function to each element in the list and filters out null results.
+   * @template T The type of elements in the original list.
+   * @template U The type of elements in the new list.
+   * @param {(value: T) => U | null} fn The function to apply to each element.
+   * @param {List<T>} list The original list.
+   * @returns {List<U>} A new list with non-null transformed elements.
+   */
   filterMap,
+  /**
+   * Reduces the list to a single value by applying a function to each element and accumulating the results.
+   * @template T The type of elements in the list.
+   * @template U The type of the accumulator/result.
+   * @param {(acc: U, value: T, index: number) => U} fn The reducer function.
+   * @param {U} acc The initial accumulator value.
+   * @param {List<T>} list The list to reduce.
+   * @returns {U} The reduced value.
+   */
   reduce,
 };

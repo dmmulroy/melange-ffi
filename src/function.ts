@@ -337,4 +337,28 @@ const curry: Curry = (
   return curried;
 };
 
-export const Function = { curry } as const;
+export const Function = {
+  /**
+   * Transforms a function into a curried version of itself. This allows a
+   * function with multiple arguments to be called as a sequence of functions,
+   * each with a single argument. Depending on the number of parameters
+   * of the input function, it returns a corresponding curried function. It
+   * supports functions with up to five parameters, with a generic version for
+   * functions with more than five arguments.
+   *
+   * Usage of this function enables partial application of arguments, allowing a
+   * function to be called with
+   * fewer arguments than it expects initially.
+   *
+   * @param {Function} fn - The function to be curried.
+   * @returns {Function} A curried version of the input function.
+   *
+   * @example
+   * ```javascript
+   * const add = (a, b) => a + b;
+   * const curriedAdd = curry(add);
+   * curriedAdd(1)(2) // Returns 3
+   * ```
+   */
+  curry,
+} as const;

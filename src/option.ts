@@ -21,6 +21,7 @@ export type None = Brand<undefined | null, typeof NONE>;
  * @template T The type of the value.
  */
 export type Option<T> = Some<T> | None;
+
 /**
  * Creates an Option with a value.
  * @template T The type of the value.
@@ -128,14 +129,80 @@ function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
 }
 
 export const Option = {
+  /**
+   * Creates an Option with a value.
+   * @template T The type of the value.
+   * @param {T} value The value to be encapsulated.
+   * @returns {Option<T>} An Option containing the value.
+   */
   some,
+  /**
+   * Creates an Option with no value (None).
+   * @returns {None} An Option representing None.
+   */
   none,
+  /**
+   * Checks if the Option is a Some.
+   * @template T The type of the value in Option.
+   * @param {Option<T>} value The Option to check.
+   * @returns {boolean} True if the Option is Some, false otherwise.
+   */
   isSome,
+  /**
+   * Checks if the Option is a None.
+   * @template T The type of the value in Option.
+   * @param {Option<T>} value The Option to check.
+   * @returns {boolean} True if the Option is None, false otherwise.
+   */
   isNone,
+  /**
+   * Checks if a value is an Option.
+   * @template T The type of the value in Option.
+   * @param {any} value The value to check.
+   * @returns {boolean} True if the value is an Option, false otherwise.
+   */
   isOption,
+  /**
+   * Maps an Option to another using the provided function.
+   * @template T The type of the value in the original Option.
+   * @template U The type of the value in the new Option.
+   * @param {(value: T) => U} fn The mapping function.
+   * @param {Option<T>} option The original Option.
+   * @returns {Option<U>} The new Option after applying the mapping function.
+   */
   map,
+  /**
+   * Applies a function to an Option and flattens the result.
+   * @template T The type of the value in the original Option.
+   * @template U The type of the value in the new Option.
+   * @param {(value: T) => Option<U>} fn The function to apply.
+   * @param {Option<T>} option The original Option.
+   * @returns {Option<U>} The new Option after applying the function.
+   */
   then,
+  /**
+   * Unwraps an Option, returning the default value if it is None.
+   * @template T The type of the value, constrained to number.
+   * @param {Option<T>} option The Option to unwrap.
+   * @param {T} defaultValue The default value to return if Option is None.
+   * @returns {T} The unwrapped value or the default value.
+   */
   unwrapOr,
+  /**
+   * Unwraps an Option, throwing an error if it is None.
+   * @template T The type of the value in the Option.
+   * @param {Option<T>} option The Option to unwrap.
+   * @returns {T} The unwrapped value.
+   * @throws Will throw an error if the Option is None.
+   */
   unwrap,
+  /**
+   * Converts an Option to a Result.
+   * @template T The type of the value in the Option.
+   * @template E The type of the error in the Result.
+   * @param {Option<T>} value The Option to convert.
+   * @param {E} error The error value to use in case of None.
+   * @returns {Result<T, E>} The resulting Result object.
+   */
   toResult,
 };
