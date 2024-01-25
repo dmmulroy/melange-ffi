@@ -14,8 +14,7 @@
     }
   },
   "files": [
-    "dist",
-    "vendor/**/*.mjs"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",
