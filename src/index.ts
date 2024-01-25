@@ -1,3 +1,5 @@
-import { Result } from "./result";
-import { Option } from "./option";
-import { List } from "./list";
+export * from "./array";
+export * from "./list";
+export * from "./option";
+export * from "./result";
+export * from "./function";
