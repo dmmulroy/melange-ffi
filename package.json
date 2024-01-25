@@ -17,6 +17,7 @@
     "dist"
   ],
   "scripts": {
+    "publish-patch": "npm run build && npm version patch && npm publish",
     "build": "tsup",
     "lint": "tsc"
   },
