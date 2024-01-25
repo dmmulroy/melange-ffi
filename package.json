@@ -10,12 +10,18 @@
   "files": [
     "src/melange-ffi.mjs",
     "src/melange-ffi.d.mts",
-    "vendor/*"
+    "vendor/**/*.mjs"
   ],
   "repository": "https://github.com/dmmulroy/melange-ffi",
   "author": "Dillon Mulroy <dillon.mulroy@gmail.com>",
-  "scripts": {},
+  "scripts": {
+    "build": "tsup src/result.ts  --format cjs,esm --dts --treeshake --clean --sourcemap",
+    "lint": "tsc"
+  },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.39.3",
+    "bun-types": "1.0.20",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   }
 }
