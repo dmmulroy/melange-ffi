@@ -14,7 +14,7 @@ export type Some<T> = Brand<T, typeof SOME>;
 /**
  * Represents the absence of a value.
  */
-export type None = Brand<undefined | null, typeof NONE>;
+export type None = Brand<undefined, typeof NONE>;
 
 /**
  * Represents an option which can either be Some or None.
@@ -61,16 +61,6 @@ function isNone<T>(value: Option<T>): boolean {
 }
 
 /**
- * Checks if a value is an Option.
- * @template T The type of the value in Option.
- * @param {any} value The value to check.
- * @returns {boolean} True if the value is an Option, false otherwise.
- */
-function isOption<T>(value: T): boolean {
-  return isSome(value as Option<T>) || isNone(value as Option<T>);
-}
-
-/**
  * Maps an Option to another using the provided function.
  * @template T The type of the value in the original Option.
  * @template U The type of the value in the new Option.
@@ -97,11 +87,11 @@ function then<T, U>(fn: (value: T) => Option<U>, option: Option<T>): Option<U> {
 /**
  * Unwraps an Option, returning the default value if it is None.
  * @template T The type of the value, constrained to number.
- * @param {Option<T>} option The Option to unwrap.
  * @param {T} defaultValue The default value to return if Option is None.
+ * @param {Option<T>} option The Option to unwrap.
  * @returns {T} The unwrapped value or the default value.
  */
-function unwrapOr<T extends number>(option: Option<T>, defaultValue: T): T {
+function unwrapOr<T>(defaultValue: T, option: Option<T>): T {
   return Melange_option.value(option, defaultValue);
 }
 
@@ -120,12 +110,12 @@ function unwrap<T>(option: Option<T>): T {
  * Converts an Option to a Result.
  * @template T The type of the value in the Option.
  * @template E The type of the error in the Result.
- * @param {Option<T>} value The Option to convert.
  * @param {E} error The error value to use in case of None.
+ * @param {Option<T>} value The Option to convert.
  * @returns {Result<T, E>} The resulting Result object.
  */
-function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
-  return Melange_option.to_result(value, error) as unknown as Result<T, E>;
+function toResult<T, E>(error: E, value: Option<T>): Result<T, E> {
+  return Melange_option.to_result(error, value) as unknown as Result<T, E>;
 }
 
 export const Option = {
@@ -156,13 +146,6 @@ export const Option = {
    */
   isNone,
   /**
-   * Checks if a value is an Option.
-   * @template T The type of the value in Option.
-   * @param {any} value The value to check.
-   * @returns {boolean} True if the value is an Option, false otherwise.
-   */
-  isOption,
-  /**
    * Maps an Option to another using the provided function.
    * @template T The type of the value in the original Option.
    * @template U The type of the value in the new Option.
@@ -183,8 +166,8 @@ export const Option = {
   /**
    * Unwraps an Option, returning the default value if it is None.
    * @template T The type of the value, constrained to number.
-   * @param {Option<T>} option The Option to unwrap.
    * @param {T} defaultValue The default value to return if Option is None.
+   * @param {Option<T>} option The Option to unwrap.
    * @returns {T} The unwrapped value or the default value.
    */
   unwrapOr,
@@ -200,8 +183,8 @@ export const Option = {
    * Converts an Option to a Result.
    * @template T The type of the value in the Option.
    * @template E The type of the error in the Result.
-   * @param {Option<T>} value The Option to convert.
    * @param {E} error The error value to use in case of None.
+   * @param {Option<T>} value The Option to convert.
    * @returns {Result<T, E>} The resulting Result object.
    */
   toResult,

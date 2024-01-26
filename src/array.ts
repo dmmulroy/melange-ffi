@@ -6,7 +6,11 @@ type UnionToIntersection<Union> = (
 
 type IsSingleType<T> = [T] extends [UnionToIntersection<T>] ? true : false;
 
-type SingleTypeOf<T> = IsSingleType<T> extends true ? T : never;
+/**
+ * Represents a single type that iss not a union of multiple types.
+ * @template T The tyoe of the single type.
+ */
+export type SingleTypeOf<T> = IsSingleType<T> extends true ? T : never;
 
 /**
  * Represents an array of a single type.

@@ -4,7 +4,7 @@ import * as Melange_array from "../vendor/melange/array.mjs";
 import { Brand } from "./brand";
 import { Option } from "./option";
 import { Result } from "./result";
-import { ArrayOf } from "./array";
+import { ArrayOf, SingleTypeOf } from "./array";
 
 declare const LIST: unique symbol;
 
@@ -65,15 +65,24 @@ function isEmpty<T>(list: List<T>): boolean {
 
 /**
  * Checks if a value is a List.
+ * Note: This can be an expensive operation, it will traverse the entire list.
+ *
  * @param {unknown} maybeList The value to check.
  * @returns {boolean} True if the value is a List, false otherwise.
  */
 function isList(maybeList: unknown): boolean {
+  // Melange represents lists as { hd: value, tl: 0 | list }, hd will not be
+  // undefined or null. tl will be 0 if the list is empty or a list if it is
+  // not.
   if (
-    typeof maybeList === "object" &&
-    maybeList !== null &&
-    "hd" in maybeList &&
-    "tl" in maybeList
+    (typeof maybeList === "object" &&
+      maybeList !== null &&
+      "hd" in maybeList &&
+      maybeList.hd !== undefined &&
+      maybeList.hd !== null &&
+      "tl" in maybeList &&
+      (maybeList.tl === 0 || isList(maybeList.tl))) ||
+    maybeList === 0
   ) {
     return true;
   }
@@ -84,20 +93,36 @@ function isList(maybeList: unknown): boolean {
  * Retrieves the first element of the list.
  * @template T The type of elements in the list.
  * @param {List<T>} list The list to retrieve the head from.
- * @returns {T} The first element of the list.
+ * @returns {Option<T>} The first element of the list or None if the list is empty.
  */
-function head<T>(list: List<T>): T {
-  return Melange_list.hd(list);
+function head<T>(list: List<T>): Option<T> {
+  try {
+    return Option.some(Melange_list.hd(list));
+  } catch (/* {
+    RE_EXN_ID: "Failure",
+    _1: "hd",
+    Error: new Error(),
+  }*/ _) {
+    return Option.none();
+  }
 }
 
 /**
  * Retrieves all elements of the list except the first.
  * @template T The type of elements in the list.
  * @param {List<T>} list The list to retrieve the tail from.
- * @returns {List<T>} A new list containing all elements except the first.
+ * @returns {Option<List<T>>} The tail of the list or None if the list is empty.
  */
-function tail<T>(list: List<T>): List<T> {
-  return Melange_list.tl(list);
+function tail<T>(list: List<T>): Option<List<T>> {
+  try {
+    return Option.some(Melange_list.tl(list));
+  } catch (/* {
+    RE_EXN_ID: "Failure",
+    _1: "tl",
+    Error: new Error(),
+  } */ _) {
+    return Option.none();
+  }
 }
 
 /**
@@ -118,8 +143,8 @@ function prepend<T>(value: T, list: List<T>): List<T> {
  * @param {List<T>} list The list to append the value to.
  * @returns {List<T>} A new list with the value appended.
  */
-function append<T>(value: T, list: List<T>): List<T> {
-  return Melange_list.append(list, [value]);
+function append<T>(value: SingleTypeOf<T>, list: List<T>): List<T> {
+  return Melange_list.append(list, List.ofArray([value]));
 }
 
 /**
@@ -131,8 +156,8 @@ function append<T>(value: T, list: List<T>): List<T> {
  */
 function at<T>(index: number, list: List<T>): Result<T, string> {
   try {
-    const maybeValue = Melange_list.nth_opt(index, list);
-    return Option.toResult(maybeValue, "Not found");
+    const maybeValue = Melange_list.nth_opt(list, index);
+    return Option.toResult("Not found", maybeValue);
   } catch (/** { RE_EXN_ID: "Invalid_argument", _1: "List.nth",*/ _) {
     return Result.error("Negative index");
   }
@@ -150,7 +175,7 @@ function find<T>(
   list: List<T>,
 ): Result<T, string> {
   const maybeValue = Melange_list.find_opt(predicate, list);
-  return Option.toResult(maybeValue, "Not found");
+  return Option.toResult("Not found", maybeValue);
 }
 
 /**
@@ -165,6 +190,7 @@ function map<T, U>(fn: (value: T, index: number) => U, list: List<T>): List<U> {
   function flippedFn(idx: number, value: T) {
     return fn(value, idx);
   }
+
   return Melange_list.mapi(flippedFn, list) as unknown as List<U>;
 }
 
@@ -179,18 +205,22 @@ function filter<T>(
   predicate: (value: T, index: number) => boolean,
   list: List<T>,
 ): List<T> {
-  return Melange_list.filteri(predicate, list) as unknown as List<T>;
+  function flippedPredicateFn(idx: number, value: T) {
+    return predicate(value, idx);
+  }
+  return Melange_list.filteri(flippedPredicateFn, list) as unknown as List<T>;
 }
 
 /**
- * Applies a function to each element in the list and filters out null results.
+ * Applies a function that returns an Option<T> to each element in the list and
+ * filters out None values.
  * @template T The type of elements in the original list.
  * @template U The type of elements in the new list.
- * @param {(value: T) => U | null} fn The function to apply to each element.
+ * @param {(value: T) => Option<U>} fn The function to apply to each element.
  * @param {List<T>} list The original list.
  * @returns {List<U>} A new list with non-null transformed elements.
  */
-function filterMap<T, U>(fn: (value: T) => U | null, list: List<T>): List<U> {
+function filterMap<T, U>(fn: (value: T) => Option<U>, list: List<T>): List<U> {
   return Melange_list.filter_map(fn, list) as unknown as List<U>;
 }
 
@@ -263,14 +293,14 @@ export const List = {
    * Retrieves the first element of the list.
    * @template T The type of elements in the list.
    * @param {List<T>} list The list to retrieve the head from.
-   * @returns {T} The first element of the list.
+   * @returns {Option<T>} The first element of the list or None if the list is empty.
    */
   head,
   /**
    * Retrieves all elements of the list except the first.
    * @template T The type of elements in the list.
    * @param {List<T>} list The list to retrieve the tail from.
-   * @returns {List<T>} A new list containing all elements except the first.
+   * @returns {Option<List<T>>} The tail of the list or None if the list is empty.
    */
   tail,
   /**
@@ -323,10 +353,11 @@ export const List = {
    */
   filter,
   /**
-   * Applies a function to each element in the list and filters out null results.
+   * Applies a function that returns an Option<T> to each element in the list and
+   * filters out None values.
    * @template T The type of elements in the original list.
    * @template U The type of elements in the new list.
-   * @param {(value: T) => U | null} fn The function to apply to each element.
+   * @param {(value: T) => Option<U>} fn The function to apply to each element.
    * @param {List<T>} list The original list.
    * @returns {List<U>} A new list with non-null transformed elements.
    */

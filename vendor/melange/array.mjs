@@ -16,13 +16,13 @@ function init(l, f) {
   }
   if (l < 0) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.init",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.init",
+      Error: new Error(),
+    };
   }
   var res = Caml_array.make(l, Curry._1(f, 0));
-  for(var i = 1; i < l; ++i){
+  for (var i = 1; i < l; ++i) {
     res[i] = Curry._1(f, i);
   }
   return res;
@@ -30,7 +30,7 @@ function init(l, f) {
 
 function make_matrix(sx, sy, init) {
   var res = Caml_array.make(sx, []);
-  for(var x = 0; x < sx; ++x){
+  for (var x = 0; x < sx; ++x) {
     res[x] = Caml_array.make(sy, init);
   }
   return res;
@@ -57,42 +57,48 @@ function append(a1, a2) {
 }
 
 function sub(a, ofs, len) {
-  if (ofs < 0 || len < 0 || ofs > (a.length - len | 0)) {
+  if (ofs < 0 || len < 0 || ofs > ((a.length - len) | 0)) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.sub",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.sub",
+      Error: new Error(),
+    };
   }
   return Caml_array.sub(a, ofs, len);
 }
 
 function fill(a, ofs, len, v) {
-  if (ofs < 0 || len < 0 || ofs > (a.length - len | 0)) {
+  if (ofs < 0 || len < 0 || ofs > ((a.length - len) | 0)) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.fill",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.fill",
+      Error: new Error(),
+    };
   }
-  for(var i = ofs ,i_finish = ofs + len | 0; i < i_finish; ++i){
+  for (var i = ofs, i_finish = (ofs + len) | 0; i < i_finish; ++i) {
     a[i] = v;
   }
 }
 
 function blit(a1, ofs1, a2, ofs2, len) {
-  if (len < 0 || ofs1 < 0 || ofs1 > (a1.length - len | 0) || ofs2 < 0 || ofs2 > (a2.length - len | 0)) {
+  if (
+    len < 0 ||
+    ofs1 < 0 ||
+    ofs1 > ((a1.length - len) | 0) ||
+    ofs2 < 0 ||
+    ofs2 > ((a2.length - len) | 0)
+  ) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.blit",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.blit",
+      Error: new Error(),
+    };
   }
   Caml_array.blit(a1, ofs1, a2, ofs2, len);
 }
 
 function iter(f, a) {
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     Curry._1(f, a[i]);
   }
 }
@@ -100,12 +106,12 @@ function iter(f, a) {
 function iter2(f, a, b) {
   if (a.length !== b.length) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.iter2: arrays must have the same length",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.iter2: arrays must have the same length",
+      Error: new Error(),
+    };
   }
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     Curry._2(f, a[i], b[i]);
   }
 }
@@ -116,20 +122,20 @@ function map(f, a) {
     return [];
   }
   var r = Caml_array.make(l, Curry._1(f, a[0]));
-  for(var i = 1; i < l; ++i){
+  for (var i = 1; i < l; ++i) {
     r[i] = Curry._1(f, a[i]);
   }
   return r;
 }
 
 function map_inplace(f, a) {
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     a[i] = Curry._1(f, a[i]);
   }
 }
 
 function mapi_inplace(f, a) {
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     a[i] = Curry._2(f, i, a[i]);
   }
 }
@@ -139,23 +145,23 @@ function map2(f, a, b) {
   var lb = b.length;
   if (la !== lb) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.map2: arrays must have the same length",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.map2: arrays must have the same length",
+      Error: new Error(),
+    };
   }
   if (la === 0) {
     return [];
   }
   var r = Caml_array.make(la, Curry._2(f, a[0], b[0]));
-  for(var i = 1; i < la; ++i){
+  for (var i = 1; i < la; ++i) {
     r[i] = Curry._2(f, a[i], b[i]);
   }
   return r;
 }
 
 function iteri(f, a) {
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     Curry._2(f, i, a[i]);
   }
 }
@@ -166,16 +172,16 @@ function mapi(f, a) {
     return [];
   }
   var r = Caml_array.make(l, Curry._2(f, 0, a[0]));
-  for(var i = 1; i < l; ++i){
+  for (var i = 1; i < l; ++i) {
     r[i] = Curry._2(f, i, a[i]);
   }
   return r;
 }
 
 function to_list(a) {
-  var _i = a.length - 1 | 0;
-  var _res = /* [] */0;
-  while(true) {
+  var _i = (a.length - 1) | 0;
+  var _res = /* [] */ 0;
+  while (true) {
     var res = _res;
     var i = _i;
     if (i < 0) {
@@ -183,34 +189,35 @@ function to_list(a) {
     }
     _res = {
       hd: a[i],
-      tl: res
+      tl: res,
     };
-    _i = i - 1 | 0;
-    continue ;
-  };
+    _i = (i - 1) | 0;
+    continue;
+  }
 }
 
 function list_length(_accu, _param) {
-  while(true) {
+  while (true) {
     var param = _param;
     var accu = _accu;
     if (!param) {
       return accu;
     }
     _param = param.tl;
-    _accu = accu + 1 | 0;
-    continue ;
-  };
+    _accu = (accu + 1) | 0;
+    continue;
+  }
 }
 
 function of_list(l) {
+  debugger;
   if (!l) {
     return [];
   }
   var a = Caml_array.make(list_length(0, l), l.hd);
   var _i = 1;
   var _param = l.tl;
-  while(true) {
+  while (true) {
     var param = _param;
     var i = _i;
     if (!param) {
@@ -218,14 +225,14 @@ function of_list(l) {
     }
     a[i] = param.hd;
     _param = param.tl;
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function fold_left(f, x, a) {
   var r = x;
-  for(var i = 0 ,i_finish = a.length; i < i_finish; ++i){
+  for (var i = 0, i_finish = a.length; i < i_finish; ++i) {
     r = Curry._2(f, r, a[i]);
   }
   return r;
@@ -234,28 +241,22 @@ function fold_left(f, x, a) {
 function fold_left_map(f, acc, input_array) {
   var len = input_array.length;
   if (len === 0) {
-    return [
-            acc,
-            []
-          ];
+    return [acc, []];
   }
   var match = Curry._2(f, acc, input_array[0]);
   var output_array = Caml_array.make(len, match[1]);
   var acc$1 = match[0];
-  for(var i = 1; i < len; ++i){
+  for (var i = 1; i < len; ++i) {
     var match$1 = Curry._2(f, acc$1, input_array[i]);
     acc$1 = match$1[0];
     output_array[i] = match$1[1];
   }
-  return [
-          acc$1,
-          output_array
-        ];
+  return [acc$1, output_array];
 }
 
 function fold_right(f, a, x) {
   var r = x;
-  for(var i = a.length - 1 | 0; i >= 0; --i){
+  for (var i = (a.length - 1) | 0; i >= 0; --i) {
     r = Curry._2(f, a[i], r);
   }
   return r;
@@ -264,7 +265,7 @@ function fold_right(f, a, x) {
 function exists(p, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
       return false;
@@ -272,15 +273,15 @@ function exists(p, a) {
     if (Curry._1(p, a[i])) {
       return true;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function for_all(p, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
       return true;
@@ -288,9 +289,9 @@ function for_all(p, a) {
     if (!Curry._1(p, a[i])) {
       return false;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function for_all2(p, l1, l2) {
@@ -298,13 +299,13 @@ function for_all2(p, l1, l2) {
   var n2 = l2.length;
   if (n1 !== n2) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.for_all2",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.for_all2",
+      Error: new Error(),
+    };
   }
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n1) {
       return true;
@@ -312,9 +313,9 @@ function for_all2(p, l1, l2) {
     if (!Curry._2(p, l1[i], l2[i])) {
       return false;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function exists2(p, l1, l2) {
@@ -322,13 +323,13 @@ function exists2(p, l1, l2) {
   var n2 = l2.length;
   if (n1 !== n2) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.exists2",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.exists2",
+      Error: new Error(),
+    };
   }
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n1) {
       return false;
@@ -336,15 +337,15 @@ function exists2(p, l1, l2) {
     if (Curry._2(p, l1[i], l2[i])) {
       return true;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function mem(x, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
       return false;
@@ -352,15 +353,15 @@ function mem(x, a) {
     if (Caml_obj.caml_equal(a[i], x)) {
       return true;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function memq(x, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
       return false;
@@ -368,98 +369,92 @@ function memq(x, a) {
     if (x === a[i]) {
       return true;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function find_opt(p, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
-      return ;
+      return;
     }
     var x = a[i];
     if (Curry._1(p, x)) {
       return Caml_option.some(x);
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function find_index(p, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
-      return ;
+      return;
     }
     if (Curry._1(p, a[i])) {
       return i;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function find_map(f, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
-      return ;
+      return;
     }
     var r = Curry._1(f, a[i]);
     if (r !== undefined) {
       return r;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function find_mapi(f, a) {
   var n = a.length;
   var _i = 0;
-  while(true) {
+  while (true) {
     var i = _i;
     if (i === n) {
-      return ;
+      return;
     }
     var r = Curry._2(f, i, a[i]);
     if (r !== undefined) {
       return r;
     }
-    _i = i + 1 | 0;
-    continue ;
-  };
+    _i = (i + 1) | 0;
+    continue;
+  }
 }
 
 function split(x) {
   if (Caml_obj.caml_equal(x, [])) {
-    return [
-            [],
-            []
-          ];
+    return [[], []];
   }
   var match = x[0];
   var n = x.length;
   var a = Caml_array.make(n, match[0]);
   var b = Caml_array.make(n, match[1]);
-  for(var i = 1; i < n; ++i){
+  for (var i = 1; i < n; ++i) {
     var match$1 = x[i];
     a[i] = match$1[0];
     b[i] = match$1[1];
   }
-  return [
-          a,
-          b
-        ];
+  return [a, b];
 }
 
 function combine(a, b) {
@@ -467,58 +462,65 @@ function combine(a, b) {
   var nb = b.length;
   if (na !== nb) {
     throw {
-          RE_EXN_ID: "Invalid_argument",
-          _1: "Array.combine",
-          Error: new Error()
-        };
+      RE_EXN_ID: "Invalid_argument",
+      _1: "Array.combine",
+      Error: new Error(),
+    };
   }
   if (na === 0) {
     return [];
   }
-  var x = Caml_array.make(na, [
-        a[0],
-        b[0]
-      ]);
-  for(var i = 1; i < na; ++i){
-    x[i] = [
-      a[i],
-      b[i]
-    ];
+  var x = Caml_array.make(na, [a[0], b[0]]);
+  for (var i = 1; i < na; ++i) {
+    x[i] = [a[i], b[i]];
   }
   return x;
 }
 
-var Bottom = /* @__PURE__ */Caml_exceptions.create("Stdlib.Array.Bottom");
+var Bottom = /* @__PURE__ */ Caml_exceptions.create("Stdlib.Array.Bottom");
 
 function sort(cmp, a) {
   var maxson = function (l, i) {
-    var i31 = ((i + i | 0) + i | 0) + 1 | 0;
+    var i31 = (((((i + i) | 0) + i) | 0) + 1) | 0;
     var x = i31;
-    if ((i31 + 2 | 0) < l) {
-      if (Curry._2(cmp, Caml_array.get(a, i31), Caml_array.get(a, i31 + 1 | 0)) < 0) {
-        x = i31 + 1 | 0;
+    if (((i31 + 2) | 0) < l) {
+      if (
+        Curry._2(
+          cmp,
+          Caml_array.get(a, i31),
+          Caml_array.get(a, (i31 + 1) | 0),
+        ) < 0
+      ) {
+        x = (i31 + 1) | 0;
       }
-      if (Curry._2(cmp, Caml_array.get(a, x), Caml_array.get(a, i31 + 2 | 0)) < 0) {
-        x = i31 + 2 | 0;
+      if (
+        Curry._2(cmp, Caml_array.get(a, x), Caml_array.get(a, (i31 + 2) | 0)) <
+        0
+      ) {
+        x = (i31 + 2) | 0;
       }
       return x;
     }
-    if ((i31 + 1 | 0) < l && Curry._2(cmp, Caml_array.get(a, i31), Caml_array.get(a, i31 + 1 | 0)) < 0) {
-      return i31 + 1 | 0;
+    if (
+      ((i31 + 1) | 0) < l &&
+      Curry._2(cmp, Caml_array.get(a, i31), Caml_array.get(a, (i31 + 1) | 0)) <
+        0
+    ) {
+      return (i31 + 1) | 0;
     }
     if (i31 < l) {
       return i31;
     }
     throw {
-          RE_EXN_ID: Bottom,
-          _1: i,
-          Error: new Error()
-        };
+      RE_EXN_ID: Bottom,
+      _1: i,
+      Error: new Error(),
+    };
   };
   var trickle = function (l, i, e) {
     try {
       var _i = i;
-      while(true) {
+      while (true) {
         var i$1 = _i;
         var j = maxson(l, i$1);
         if (Curry._2(cmp, Caml_array.get(a, j), e) <= 0) {
@@ -526,10 +528,9 @@ function sort(cmp, a) {
         }
         Caml_array.set(a, i$1, Caml_array.get(a, j));
         _i = j;
-        continue ;
-      };
-    }
-    catch (raw_exn){
+        continue;
+      }
+    } catch (raw_exn) {
       var exn = Caml_js_exceptions.internalToOCamlException(raw_exn);
       if (exn.RE_EXN_ID === Bottom) {
         return Caml_array.set(a, exn._1, e);
@@ -540,15 +541,14 @@ function sort(cmp, a) {
   var bubble = function (l, i) {
     try {
       var _i = i;
-      while(true) {
+      while (true) {
         var i$1 = _i;
         var j = maxson(l, i$1);
         Caml_array.set(a, i$1, Caml_array.get(a, j));
         _i = j;
-        continue ;
-      };
-    }
-    catch (raw_exn){
+        continue;
+      }
+    } catch (raw_exn) {
       var exn = Caml_js_exceptions.internalToOCamlException(raw_exn);
       if (exn.RE_EXN_ID === Bottom) {
         return exn._1;
@@ -557,19 +557,15 @@ function sort(cmp, a) {
     }
   };
   var trickleup = function (_i, e) {
-    while(true) {
+    while (true) {
       var i = _i;
-      var father = (i - 1 | 0) / 3 | 0;
+      var father = (((i - 1) | 0) / 3) | 0;
       if (i === father) {
         throw {
-              RE_EXN_ID: "Assert_failure",
-              _1: [
-                "array.cppo.ml",
-                353,
-                4
-              ],
-              Error: new Error()
-            };
+          RE_EXN_ID: "Assert_failure",
+          _1: ["array.cppo.ml", 353, 4],
+          Error: new Error(),
+        };
       }
       if (Curry._2(cmp, Caml_array.get(a, father), e) >= 0) {
         return Caml_array.set(a, i, e);
@@ -579,20 +575,20 @@ function sort(cmp, a) {
         return Caml_array.set(a, 0, e);
       }
       _i = father;
-      continue ;
-    };
+      continue;
+    }
   };
   var l = a.length;
-  for(var i = ((l + 1 | 0) / 3 | 0) - 1 | 0; i >= 0; --i){
+  for (var i = (((((l + 1) | 0) / 3) | 0) - 1) | 0; i >= 0; --i) {
     trickle(l, i, Caml_array.get(a, i));
   }
-  for(var i$1 = l - 1 | 0; i$1 >= 2; --i$1){
+  for (var i$1 = (l - 1) | 0; i$1 >= 2; --i$1) {
     var e = Caml_array.get(a, i$1);
     Caml_array.set(a, i$1, Caml_array.get(a, 0));
     trickleup(bubble(i$1, 0), e);
   }
   if (l <= 1) {
-    return ;
+    return;
   }
   var e$1 = Caml_array.get(a, 1);
   Caml_array.set(a, 1, Caml_array.get(a, 0));
@@ -601,14 +597,14 @@ function sort(cmp, a) {
 
 function stable_sort(cmp, a) {
   var merge = function (src1ofs, src1len, src2, src2ofs, src2len, dst, dstofs) {
-    var src1r = src1ofs + src1len | 0;
-    var src2r = src2ofs + src2len | 0;
+    var src1r = (src1ofs + src1len) | 0;
+    var src2r = (src2ofs + src2len) | 0;
     var _i1 = src1ofs;
     var _s1 = Caml_array.get(a, src1ofs);
     var _i2 = src2ofs;
     var _s2 = Caml_array.get(src2, src2ofs);
     var _d = dstofs;
-    while(true) {
+    while (true) {
       var d = _d;
       var s2 = _s2;
       var i2 = _i2;
@@ -616,53 +612,53 @@ function stable_sort(cmp, a) {
       var i1 = _i1;
       if (Curry._2(cmp, s1, s2) <= 0) {
         Caml_array.set(dst, d, s1);
-        var i1$1 = i1 + 1 | 0;
+        var i1$1 = (i1 + 1) | 0;
         if (i1$1 >= src1r) {
-          return blit(src2, i2, dst, d + 1 | 0, src2r - i2 | 0);
+          return blit(src2, i2, dst, (d + 1) | 0, (src2r - i2) | 0);
         }
-        _d = d + 1 | 0;
+        _d = (d + 1) | 0;
         _s1 = Caml_array.get(a, i1$1);
         _i1 = i1$1;
-        continue ;
+        continue;
       }
       Caml_array.set(dst, d, s2);
-      var i2$1 = i2 + 1 | 0;
+      var i2$1 = (i2 + 1) | 0;
       if (i2$1 >= src2r) {
-        return blit(a, i1, dst, d + 1 | 0, src1r - i1 | 0);
+        return blit(a, i1, dst, (d + 1) | 0, (src1r - i1) | 0);
       }
-      _d = d + 1 | 0;
+      _d = (d + 1) | 0;
       _s2 = Caml_array.get(src2, i2$1);
       _i2 = i2$1;
-      continue ;
-    };
+      continue;
+    }
   };
   var isortto = function (srcofs, dst, dstofs, len) {
-    for(var i = 0; i < len; ++i){
-      var e = Caml_array.get(a, srcofs + i | 0);
-      var j = (dstofs + i | 0) - 1 | 0;
-      while(j >= dstofs && Curry._2(cmp, Caml_array.get(dst, j), e) > 0) {
-        Caml_array.set(dst, j + 1 | 0, Caml_array.get(dst, j));
-        j = j - 1 | 0;
-      };
-      Caml_array.set(dst, j + 1 | 0, e);
+    for (var i = 0; i < len; ++i) {
+      var e = Caml_array.get(a, (srcofs + i) | 0);
+      var j = (((dstofs + i) | 0) - 1) | 0;
+      while (j >= dstofs && Curry._2(cmp, Caml_array.get(dst, j), e) > 0) {
+        Caml_array.set(dst, (j + 1) | 0, Caml_array.get(dst, j));
+        j = (j - 1) | 0;
+      }
+      Caml_array.set(dst, (j + 1) | 0, e);
     }
   };
   var sortto = function (srcofs, dst, dstofs, len) {
     if (len <= 5) {
       return isortto(srcofs, dst, dstofs, len);
     }
-    var l1 = len / 2 | 0;
-    var l2 = len - l1 | 0;
-    sortto(srcofs + l1 | 0, dst, dstofs + l1 | 0, l2);
-    sortto(srcofs, a, srcofs + l2 | 0, l1);
-    merge(srcofs + l2 | 0, l1, dst, dstofs + l1 | 0, l2, dst, dstofs);
+    var l1 = (len / 2) | 0;
+    var l2 = (len - l1) | 0;
+    sortto((srcofs + l1) | 0, dst, (dstofs + l1) | 0, l2);
+    sortto(srcofs, a, (srcofs + l2) | 0, l1);
+    merge((srcofs + l2) | 0, l1, dst, (dstofs + l1) | 0, l2, dst, dstofs);
   };
   var l = a.length;
   if (l <= 5) {
     return isortto(0, a, 0, l);
   }
-  var l1 = l / 2 | 0;
-  var l2 = l - l1 | 0;
+  var l1 = (l / 2) | 0;
+  var l2 = (l - l1) | 0;
   var t = Caml_array.make(l2, Caml_array.get(a, 0));
   sortto(l1, t, 0, l2);
   sortto(0, a, l2, l1);
@@ -672,16 +668,16 @@ function stable_sort(cmp, a) {
 function to_seq(a) {
   var aux = function (i, param) {
     if (i >= a.length) {
-      return /* Nil */0;
+      return /* Nil */ 0;
     }
     var x = a[i];
-    var partial_arg = i + 1 | 0;
-    return /* Cons */{
-            _0: x,
-            _1: (function (param) {
-                return aux(partial_arg, param);
-              })
-          };
+    var partial_arg = (i + 1) | 0;
+    return /* Cons */ {
+      _0: x,
+      _1: function (param) {
+        return aux(partial_arg, param);
+      },
+    };
   };
   return function (param) {
     return aux(0, param);
@@ -691,19 +687,16 @@ function to_seq(a) {
 function to_seqi(a) {
   var aux = function (i, param) {
     if (i >= a.length) {
-      return /* Nil */0;
+      return /* Nil */ 0;
     }
     var x = a[i];
-    var partial_arg = i + 1 | 0;
-    return /* Cons */{
-            _0: [
-              i,
-              x
-            ],
-            _1: (function (param) {
-                return aux(partial_arg, param);
-              })
-          };
+    var partial_arg = (i + 1) | 0;
+    return /* Cons */ {
+      _0: [i, x],
+      _1: function (param) {
+        return aux(partial_arg, param);
+      },
+    };
   };
   return function (param) {
     return aux(0, param);
@@ -711,20 +704,24 @@ function to_seqi(a) {
 }
 
 function of_seq(i) {
-  var l = Stdlib__Seq.fold_left((function (acc, x) {
-          return {
-                  hd: x,
-                  tl: acc
-                };
-        }), /* [] */0, i);
+  var l = Stdlib__Seq.fold_left(
+    function (acc, x) {
+      return {
+        hd: x,
+        tl: acc,
+      };
+    },
+    /* [] */ 0,
+    i,
+  );
   if (!l) {
     return [];
   }
   var len = list_length(0, l);
   var a = Caml_array.make(len, l.hd);
-  var _i = len - 2 | 0;
+  var _i = (len - 2) | 0;
   var _param = l.tl;
-  while(true) {
+  while (true) {
     var param = _param;
     var i$1 = _i;
     if (!param) {
@@ -732,9 +729,9 @@ function of_seq(i) {
     }
     a[i$1] = param.hd;
     _param = param.tl;
-    _i = i$1 - 1 | 0;
-    continue ;
-  };
+    _i = (i$1 - 1) | 0;
+    continue;
+  }
 }
 
 var concat = Caml_array.concat;
@@ -742,45 +739,45 @@ var concat = Caml_array.concat;
 var fast_sort = stable_sort;
 
 export {
-  init ,
-  make_matrix ,
-  append ,
-  concat ,
-  sub ,
-  copy ,
-  fill ,
-  blit ,
-  to_list ,
-  of_list ,
-  iter ,
-  iteri ,
-  map ,
-  map_inplace ,
-  mapi ,
-  mapi_inplace ,
-  fold_left ,
-  fold_left_map ,
-  fold_right ,
-  iter2 ,
-  map2 ,
-  for_all ,
-  exists ,
-  for_all2 ,
-  exists2 ,
-  mem ,
-  memq ,
-  find_opt ,
-  find_index ,
-  find_map ,
-  find_mapi ,
-  split ,
-  combine ,
-  sort ,
-  stable_sort ,
-  fast_sort ,
-  to_seq ,
-  to_seqi ,
-  of_seq ,
-  Floatarray ,
-}
+  init,
+  make_matrix,
+  append,
+  concat,
+  sub,
+  copy,
+  fill,
+  blit,
+  to_list,
+  of_list,
+  iter,
+  iteri,
+  map,
+  map_inplace,
+  mapi,
+  mapi_inplace,
+  fold_left,
+  fold_left_map,
+  fold_right,
+  iter2,
+  map2,
+  for_all,
+  exists,
+  for_all2,
+  exists2,
+  mem,
+  memq,
+  find_opt,
+  find_index,
+  find_map,
+  find_mapi,
+  split,
+  combine,
+  sort,
+  stable_sort,
+  fast_sort,
+  to_seq,
+  to_seqi,
+  of_seq,
+  Floatarray,
+};
 /* No side effect */

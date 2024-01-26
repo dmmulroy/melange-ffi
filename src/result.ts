@@ -67,17 +67,6 @@ function isError<T, E>(value: Result<T, E>): boolean {
 }
 
 /**
- * Checks if a value is a Result.
- * @template T The type of the value in the Result.
- * @template E The type of the error in the Result.
- * @param {Result<T, E>} value The value to check.
- * @returns {boolean} True if the value is a Result, false otherwise.
- */
-function isResult<T, E>(value: Result<T, E>): boolean {
-  return isOk(value) || isError(value);
-}
-
-/**
  * Converts a Result to an Option, discarding the error if present.
  * @template T The type of the value in the Result.
  * @template E The type of the error in the Result.
@@ -121,11 +110,11 @@ function then<T, U, E>(
  * Unwraps a Result, returning the default value if it is an Error.
  * @template T The type of the value in the Result.
  * @template E The type of the error in the Result.
- * @param {Result<T, E>} result The Result to unwrap.
  * @param {T} defaultValue The default value to use if the Result is an Error.
+ * @param {Result<T, E>} result The Result to unwrap.
  * @returns {T} The unwrapped value or the default value.
  */
-function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
+function unwrapOr<T, E>(defaultValue: T, result: Result<T, E>): T {
   return Melange_result.value(result, defaultValue);
 }
 
@@ -173,14 +162,6 @@ export const Result = {
    */
   isError,
   /**
-   * Checks if a value is a Result.
-   * @template T The type of the value in the Result.
-   * @template E The type of the error in the Result.
-   * @param {Result<T, E>} value The value to check.
-   * @returns {boolean} True if the value is a Result, false otherwise.
-   */
-  isResult,
-  /**
    * Converts a Result to an Option, discarding the error if present.
    * @template T The type of the value in the Result.
    * @template E The type of the error in the Result.
@@ -212,8 +193,8 @@ export const Result = {
    * Unwraps a Result, returning the default value if it is an Error.
    * @template T The type of the value in the Result.
    * @template E The type of the error in the Result.
-   * @param {Result<T, E>} result The Result to unwrap.
    * @param {T} defaultValue The default value to use if the Result is an Error.
+   * @param {Result<T, E>} result The Result to unwrap.
    * @returns {T} The unwrapped value or the default value.
    */
   unwrapOr,
