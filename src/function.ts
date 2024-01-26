@@ -231,6 +231,12 @@ export interface CurriedFunctionWithArity5<T1, T2, T3, T4, T5, R> {
  */
 export interface Curry {
   /**
+   * Returns the function passed in if there are no arguments
+   * @template R The type of the result.
+   * @returns {() => R} The curried function.
+   */
+  <R>(func: () => R): () => R;
+  /**
    * Transforms a function with one argument into a curried version.
    * @template T1 The type of the first argument.
    * @template R The type of the result.
