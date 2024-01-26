@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import fc from "fast-check";
 import { Function } from "./function";
 
-describe("Function", () => {
+describe("Function module", () => {
   describe("curry", () => {
     it("should return the correct result for a curried two-argument function", () => {
       fc.assert(
