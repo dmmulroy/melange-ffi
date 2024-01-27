@@ -238,13 +238,17 @@ function reduce<T, U>(
   acc: U,
   list: List<T>,
 ): U {
+  // TODO: Consider writing types for Melanges runtime representation of Lists,
+  // Results, Options and utilize them as part of the Branded types.
+  type MelangeList<T> = Readonly<{ hd: T; tl: MelangeList<T> | 0 }>;
+  let melangeList = list as unknown as MelangeList<T> | 0;
   let idx = 0;
   while (true) {
-    if (!list) {
+    if (!melangeList) {
       return acc;
     }
-    acc = fn(acc, List.head(list), idx++);
-    list = List.tail(list);
+    acc = fn(acc, melangeList.hd, idx++);
+    melangeList = melangeList.tl;
   }
 }
 
