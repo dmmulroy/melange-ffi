@@ -218,7 +218,7 @@ describe("Option module", () => {
   describe("toResult", () => {
     it("should convert a Some option to Result.ok", () => {
       fc.assert(
-        fc.property(fc.anything(), fc.anything(), (value, error) => {
+        fc.property(fc.anything(), fc.anything(), (value: any, error) => {
           const someOption = Option.some(value);
           const result = Option.toResult(error, someOption);
           expect(Result.isOk(result)).toBeTrue();

@@ -6,7 +6,7 @@ describe("Result module", () => {
   describe("ok", () => {
     it("should create an Ok result with the provided value", () => {
       fc.assert(
-        fc.property(fc.anything(), (value) => {
+        fc.property(fc.anything(), (value: any) => {
           const result: Result<any, any> = Result.ok(value);
           expect(Result.isOk(result)).toBeTrue();
           expect(Result.unwrap(result)).toEqual(value);
@@ -93,12 +93,16 @@ describe("Result module", () => {
   describe("map", () => {
     it("should apply the mapping function to an Ok result and return Ok with the new value", () => {
       fc.assert(
-        fc.property(fc.anything(), fc.func(fc.anything()), (value, fn) => {
-          const okResult = Result.ok(value);
-          const mappedResult = Result.map(fn, okResult);
-          expect(Result.isOk(mappedResult)).toBeTrue();
-          expect(Result.unwrap(mappedResult)).toEqual(fn(value));
-        }),
+        fc.property(
+          fc.anything(),
+          fc.func(fc.anything()),
+          (value: any, fn: (...args: any[]) => any) => {
+            const okResult = Result.ok(value);
+            const mappedResult = Result.map(fn, okResult);
+            expect(Result.isOk(mappedResult)).toBeTrue();
+            expect(Result.unwrap(mappedResult)).toEqual(fn(value));
+          },
+        ),
       );
     });
 
@@ -115,13 +119,17 @@ describe("Result module", () => {
 
     it("should work correctly for different types of values in Ok", () => {
       fc.assert(
-        fc.property(fc.anything(), fc.anything(), (value, newValue) => {
-          const okResult = Result.ok(value);
-          const transformFn = () => newValue; // Transformation function
-          const mappedResult = Result.map(transformFn, okResult);
-          expect(Result.isOk(mappedResult)).toBeTrue();
-          expect(Result.unwrap(mappedResult)).toEqual(newValue);
-        }),
+        fc.property(
+          fc.anything(),
+          fc.anything(),
+          (value: any, newValue: any) => {
+            const okResult = Result.ok(value);
+            const transformFn = () => newValue; // Transformation function
+            const mappedResult = Result.map(transformFn, okResult);
+            expect(Result.isOk(mappedResult)).toBeTrue();
+            expect(Result.unwrap(mappedResult)).toEqual(newValue);
+          },
+        ),
       );
     });
   });
@@ -173,7 +181,7 @@ describe("Result module", () => {
 
     it("should work correctly for different types of values in Ok", () => {
       fc.assert(
-        fc.property(fc.anything(), fc.anything(), (value, newValue) => {
+        fc.property(fc.anything(), fc.anything(), (value, newValue: any) => {
           const okResult = Result.ok(value);
           const transformFn = () => Result.ok(newValue);
           const result = Result.then(transformFn, okResult);
@@ -209,7 +217,7 @@ describe("Result module", () => {
   describe("unwrap", () => {
     it("should return the value for an Ok result", () => {
       fc.assert(
-        fc.property(fc.anything(), (value) => {
+        fc.property(fc.anything(), (value: any) => {
           const okResult: Result<any, any> = Result.ok(value);
           expect(Result.unwrap(okResult)).toEqual(value);
         }),

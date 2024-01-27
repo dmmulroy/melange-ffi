@@ -5,6 +5,7 @@ import { Brand } from "./brand";
 import { Option } from "./option";
 import { Result } from "./result";
 import { ArrayOf, SingleTypeOf } from "./array";
+import { Nominal } from "./nominal";
 
 declare const LIST: unique symbol;
 
@@ -12,7 +13,7 @@ declare const LIST: unique symbol;
  * Represents a linked list type.
  * @template T The type of elements in the list.
  */
-export type List<T> = Brand<void, typeof LIST>;
+export type List<T> = Nominal<T, typeof LIST>;
 
 /**
  * Gets the length of the list.

@@ -6,6 +6,8 @@
  */
 declare const BRAND: unique symbol;
 
+declare const TYPE_BRAND: unique symbol;
+
 /**
  * Represents a branded type.
  * A branded type is a base type (T) extended with a unique brand (B), making it distinct from the base type.
@@ -13,6 +15,5 @@ declare const BRAND: unique symbol;
  *
  * @template T The base type to be branded.
  * @template B The brand type, typically a string literal type that uniquely identifies the brand.
- * @type {Brand<T, B>}
  */
-export type Brand<T, B> = T & { [BRAND]: B };
+export type Brand<T, B> = { [BRAND]: B; [TYPE_BRAND]: T };

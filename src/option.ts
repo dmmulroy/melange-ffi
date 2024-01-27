@@ -1,5 +1,5 @@
 import * as Melange_option from "../vendor/melange/option.mjs";
-import { Brand } from "./brand";
+import { Nominal } from "./nominal";
 import { Result } from "./result";
 
 declare const SOME: unique symbol;
@@ -9,12 +9,12 @@ declare const NONE: unique symbol;
  * Represents an option type, encapsulating an optional value.
  * @template T The type of the value.
  */
-export type Some<T> = Brand<void, typeof SOME>;
+export type Some<T> = Nominal<T, typeof SOME>;
 
 /**
  * Represents the absence of a value.
  */
-export type None = Brand<undefined, typeof NONE>;
+export type None = Nominal<undefined, typeof NONE>;
 
 /**
  * Represents an option which can either be Some or None.
