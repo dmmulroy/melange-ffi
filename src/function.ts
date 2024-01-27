@@ -343,6 +343,14 @@ const curry: Curry = (
   return curried;
 };
 
+// TODO: Add Function.flip
+// TODO: Add Function.identity
+// TODO: Add Function.constant
+// TODO: Add Function.tap
+// TODO: Add Function.compose
+// val try_catch : ('a -> 'b) -> ?(finally: unit -> unit) -> 'a -> ('b, exn) result
+// TODO: Add Function.tryCatch(fn, value[, finally])
+
 export const Function = {
   /**
    * Transforms a function into a curried version of itself. This allows a

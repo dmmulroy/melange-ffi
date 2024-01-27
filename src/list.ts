@@ -12,7 +12,7 @@ declare const LIST: unique symbol;
  * Represents a linked list type.
  * @template T The type of elements in the list.
  */
-export type List<T> = Brand<T, typeof LIST>;
+export type List<T> = Brand<void, typeof LIST>;
 
 /**
  * Gets the length of the list.

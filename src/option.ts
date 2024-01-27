@@ -9,7 +9,7 @@ declare const NONE: unique symbol;
  * Represents an option type, encapsulating an optional value.
  * @template T The type of the value.
  */
-export type Some<T> = Brand<T, typeof SOME>;
+export type Some<T> = Brand<void, typeof SOME>;
 
 /**
  * Represents the absence of a value.

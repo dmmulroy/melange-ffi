@@ -345,15 +345,18 @@ describe("List module", () => {
     });
   });
 
-  describe.only("at", () => {
+  describe("at", () => {
     it("should retrieve the correct element for a valid index in a non-empty list", () => {
       fc.assert(
         fc.property(
           fc.array(fc.anything(), { minLength: 1 }),
           fc.integer({ min: 0 }),
-          (array, index) => {
-            const list = List.ofArray(array);
-            const result = List.at(index % array.length, list);
+          (array: any[], index) => {
+            const list: List<any> = List.ofArray(array);
+            const result: Result<any, any> = List.at(
+              index % array.length,
+              list,
+            );
             expect(Result.unwrap(result)).toEqual(array[index % array.length]);
           },
         ),
@@ -402,12 +405,15 @@ describe("List module", () => {
   describe("find", () => {
     it("should find an element that satisfies the predicate", () => {
       fc.assert(
-        fc.property(fc.array(fc.anything(), { minLength: 1 }), (array) => {
-          const list = List.ofArray(array);
-          const predicate = (value: any) => value === array[0];
-          const result = List.find(predicate, list);
-          expect(Result.unwrap(result)).toEqual(array[0]);
-        }),
+        fc.property(
+          fc.array(fc.anything(), { minLength: 1 }),
+          (array: any[]) => {
+            const list = List.ofArray(array);
+            const predicate = (value: any) => value === array[0];
+            const result = List.find(predicate, list);
+            expect(Result.unwrap(result)).toEqual(array[0]);
+          },
+        ),
       );
     });
 

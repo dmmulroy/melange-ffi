@@ -9,13 +9,13 @@ declare const ERROR: unique symbol;
  * Represents a successful result.
  * @template T The type of the successful value.
  */
-export type Ok<T> = Brand<T, typeof OK>;
+export type Ok<T> = Brand<void, typeof OK>;
 
 /**
  * Represents an error result.
  * @template E The type of the error.
  */
-export type Error<E> = Brand<E, typeof ERROR>;
+export type Error<E> = Brand<void, typeof ERROR>;
 
 /**
  * Represents a type that can either be a successful result (Ok) or an error result (Error).
