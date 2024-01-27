@@ -1,7 +1,6 @@
 import * as Melange_list from "../vendor/melange/list.mjs";
 import * as Melange_array from "../vendor/melange/array.mjs";
 
-import { Brand } from "./brand";
 import { Option } from "./option";
 import { Result } from "./result";
 import { ArrayOf, SingleTypeOf } from "./array";

@@ -1,5 +1,5 @@
 import * as Melange_result from "../vendor/melange/result.mjs";
-import { Brand } from "./brand";
+import { Nominal } from "./nominal";
 import { Option } from "./option";
 
 declare const OK: unique symbol;
@@ -9,13 +9,13 @@ declare const ERROR: unique symbol;
  * Represents a successful result.
  * @template T The type of the successful value.
  */
-export type Ok<T> = Brand<void, typeof OK>;
+export type Ok<T> = Nominal<T, typeof OK>;
 
 /**
  * Represents an error result.
  * @template E The type of the error.
  */
-export type Error<E> = Brand<void, typeof ERROR>;
+export type Error<E> = Nominal<E, typeof ERROR>;
 
 /**
  * Represents a type that can either be a successful result (Ok) or an error result (Error).
