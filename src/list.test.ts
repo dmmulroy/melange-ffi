@@ -124,12 +124,6 @@ describe("List module", () => {
       const list = List.empty();
       expect(List.toArray(list)).toEqual([]);
     });
-
-    // TODO: Move to 'at' test
-    /* it("should return a Error Result if ", () => {
-      const list: List<any> = List.empty();
-      expect(Result.isError(List.at(0, list))).toBeTrue();
-    }); */
   });
 
   describe("isEmpty", () => {
