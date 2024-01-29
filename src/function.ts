@@ -1,3 +1,5 @@
+import { Result } from "./result";
+
 /**
  * Represents a curried function with one argument.
  * This interface describes a function that can be invoked with no arguments, returning itself,
@@ -343,15 +345,225 @@ const curry: Curry = (
   return curried;
 };
 
-// TODO: Add Function.flip
-// TODO: Add Function.identity
-// TODO: Add Function.constant
-// TODO: Add Function.tap
-// TODO: Add Function.compose
-// val try_catch : ('a -> 'b) -> ?(finally: unit -> unit) -> 'a -> ('b, exn) result
-// TODO: Add Function.tryCatch(fn, value[, finally])
+/**
+ * Flips the order of the arguments of a binary function.
+ * @param {Function} fn The function to flip.
+ * @returns {Function} A new function with the arguments flipped.
+ *
+ * @example
+ * ```javascript
+ * const numerator = 10;
+ * const denominator = 2;
+ *
+ * const divide = (numerator, denominator) => numerator / denominator;
+ * divide(numerator, denominator) // Returns 5
+ *
+ * const flippedDivide = flip(divide);
+ * flippedDivide(denominator, numerator) // Returns 5
+ */
+function flip<T1, T2, R>(
+  fn: (first: T1, second: T2) => R,
+): (first: T2, second: T1) => R {
+  return (first: T2, second: T1) => fn(second, first);
+}
+
+/**
+ * Returns the value passed in.
+ * @template T The type of the value.
+ * @param {T} value The value to return.
+ * @returns {T} The value passed in.
+ */
+function identity<T>(value: T): T {
+  return value;
+}
+
+/**
+ * Creates a function that returns the same value that is used as the
+ * argument of the `constant` function.
+ *
+ * @template T The type of the value to be returned.
+ * @param {T} value The value to be returned by the constant function.
+ * @returns {Function} A function that, when called, always returns the
+ *                     provided value, irrespective of the arguments it is passed.
+ *
+ * @example
+ * ```javascript
+ * const alwaysFive = constant(5);
+ * alwaysFive(); // Returns 5
+ * alwaysFive(10, 20); // Still returns 5, ignoring the arguments
+ * ```
+ */
+function constant<T>(value: T): <U>(...args: U[]) => T {
+  return (..._args) => value;
+}
+
+/**
+ * Executes the provided function on a given value as a side effect and returns
+ * the original value. This function is primarily used for executing side
+ * effects within a pipeline. If the provided function is asynchronous, it is
+ * called but not awaited. Errors thrown by the function, either synchronous or
+ * asynchronous, are ignored, and the original value is still returned.
+ *
+ * @template T The type of the value being processed.
+ * @param {(value: T) => void | Promise<void>} fn The function to execute as a side effect.
+ * It should either return void or a Promise resolving to void.
+ * @param {T} value The value to be passed to the function.
+ * @returns {T} The original value, irrespective of any errors thrown by `fn`.
+ */
+function tap<T>(fn: (value: T) => void | Promise<void>, value: T): T {
+  try {
+    const result = fn(value);
+    if (result instanceof Promise) {
+      result.catch(() => {});
+    }
+    return value;
+  } catch (_) {
+    return value;
+  }
+}
+
+/**
+ * Represents a function that can be composed with other functions. It takes an
+ * input of type `Input` and returns an output of type `Output`. It also
+ * includes a `compose` method for chaining additional functions to create a new
+ * `ComposableFunction`.
+ *
+ * @template Input The input type of the function.
+ * @template Output The output type of the function.
+ */
+export interface ComposableFunction<Input, Output> {
+  /**
+   * The call signature for the `ComposableFunction`. When invoked, it takes an argument of type `Input`
+   * and returns a result of type `Output`.
+   *
+   * @param {Input} arg The input argument for the function.
+   * @returns {Output} The result of the function.
+   */
+  (arg: Input): Output;
+  /**
+   * Composes the current function with another function. The output of the current function
+   * becomes the input of the next function, creating a new `ComposableFunction`.
+   *
+   * @template NextOutput The output type of the next function in the composition.
+   * @param {(arg: Output) => NextOutput} fn The next function to compose with.
+   * @returns {ComposableFunction<Input, NextOutput>} A new composable function combining the current
+   * and next function.
+   */
+  compose<NextOutput>(
+    fn: (arg: Output) => NextOutput,
+  ): ComposableFunction<Input, NextOutput>;
+}
+
+/**
+ * Creates a `ComposableFunction` from a given function.
+ * This `ComposableFunction` can then be composed with other functions using its
+ * `compose` method.
+ *
+ * @template Input The input type of the provided function.
+ * @template Output The output type of the provided function.
+ * @param {(arg: Input) => Output} fn The function to transform into a `ComposableFunction`.
+ * @returns {ComposableFunction<Input, Output>} The created `ComposableFunction`.
+ */
+function compose<Input, Output>(
+  fn: (arg: Input) => Output,
+): ComposableFunction<Input, Output> {
+  const composeFunction = (arg: Input) => fn(arg);
+
+  composeFunction.compose = <NextOutput>(
+    nextFn: (arg: Output) => NextOutput,
+  ) => {
+    return compose((input: Input) => nextFn(fn(input)));
+  };
+
+  return composeFunction;
+}
+
+/**
+ * Executes a synchronous or asynchronous function and handles any errors that
+ * it may throw, encapsulating the result or error in a `Result` object. It also
+ * executes an `andFinally` block after the try-catch, if provided. The return
+ * type of this function depends on whether the provided function `fn` is
+ * synchronous or asynchronous.
+ *
+ * @template T The type of the result expected from the function `fn`.
+ * @template F The type of the function to be executed. This can be a
+ * synchronous function returning `T` or an asynchronous function returning
+ * `Promise<T>`.
+ * @param {F} fn The function to be executed. This function should either
+ * return a value of type `T` or a `Promise<T>`.
+ * @param {() => void} andFinally An optional finally block function that will
+ * be executed after the
+ * try-catch block, regardless of the outcome.
+ * @returns {ReturnType<F> extends Promise<T> ? Promise<Result<T, string>> :
+ * Result<T, string>} If `fn` returns a `Promise<T>`, this function returns
+ * `Promise<Result<T, string>>`. If `fn` returns `T`, it returns
+ * `Result<T, string>`. The result contains either the value returned by `fn` or
+ * an error message if `fn` threw an error.
+ */
+function tryCatch<T, F extends (() => T) | (() => Promise<T>)>(
+  fn: F,
+  andFinally: () => void,
+): ReturnType<F> extends Promise<T>
+  ? Promise<Result<T, string>>
+  : Result<T, string> {
+  try {
+    const result = fn();
+    if (result instanceof Promise) {
+      return result
+        .then(Result.ok)
+        .catch((err) =>
+          Result.error(
+            `The function provided to tryCatch threw an error: ${err}`,
+          ),
+        ) as ReturnType<F> extends Promise<T>
+        ? Promise<Result<T, string>>
+        : Result<T, string>;
+    }
+    return Result.ok(result) as ReturnType<F> extends Promise<T>
+      ? Promise<Result<T, string>>
+      : Result<T, string>;
+  } catch (err) {
+    return Result.error(
+      `The function provided to tryCatch threw an error: ${err}`,
+    ) as ReturnType<F> extends Promise<T>
+      ? Promise<Result<T, string>>
+      : Result<T, string>;
+  } finally {
+    andFinally?.();
+  }
+}
 
 export const Function = {
+  /**
+   * Creates a `ComposableFunction` from a given function.
+   * This `ComposableFunction` can then be composed with other functions using its
+   * `compose` method.
+   *
+   * @template Input The input type of the provided function.
+   * @template Output The output type of the provided function.
+   * @param {(arg: Input) => Output} fn The function to transform into a `ComposableFunction`.
+   * @returns {ComposableFunction<Input, Output>} The created `ComposableFunction`.
+   */
+  compose,
+
+  /**
+   * Creates a function that returns the same value that is used as the
+   * argument of the `constant` function.
+   *
+   * @template T The type of the value to be returned.
+   * @param {T} value The value to be returned by the constant function.
+   * @returns {Function} A function that, when called, always returns the
+   *                     provided value, irrespective of the arguments it is passed.
+   *
+   * @example
+   * ```javascript
+   * const alwaysFive = constant(5);
+   * alwaysFive(); // Returns 5
+   * alwaysFive(10, 20); // Still returns 5, ignoring the arguments
+   * ```
+   */
+  constant,
+
   /**
    * Transforms a function into a curried version of itself. This allows a
    * function with multiple arguments to be called as a sequence of functions,
@@ -375,4 +587,69 @@ export const Function = {
    * ```
    */
   curry,
+
+  /**
+   * Flips the order of the arguments of a binary function.
+   * @param {Function} fn The function to flip.
+   * @returns {Function} A new function with the arguments flipped.
+   *
+   * @example
+   * ```javascript
+   * const numerator = 10;
+   * const denominator = 2;
+   *
+   * const divide = (numerator, denominator) => numerator / denominator;
+   * divide(numerator, denominator) // Returns 5
+   *
+   * const flippedDivide = flip(divide);
+   * flippedDivide(denominator, numerator) // Returns 5
+   */
+  flip,
+
+  /**
+   * Returns the value passed in.
+   * @template T The type of the value.
+   * @param {T} value The value to return.
+   * @returns {T} The value passed in.
+   */
+  identity,
+
+  /**
+   * Executes the provided function on a given value as a side effect and returns
+   * the original value. This function is primarily used for executing side
+   * effects within a pipeline. If the provided function is asynchronous, it is
+   * called but not awaited. Errors thrown by the function, either synchronous or
+   * asynchronous, are ignored, and the original value is still returned.
+   *
+   * @template T The type of the value being processed.
+   * @param {(value: T) => void | Promise<void>} fn The function to execute as a side effect.
+   * It should either return void or a Promise resolving to void.
+   * @param {T} value The value to be passed to the function.
+   * @returns {T} The original value, irrespective of any errors thrown by `fn`.
+   */
+  tap,
+
+  /**
+   * Executes a synchronous or asynchronous function and handles any errors that
+   * it may throw, encapsulating the result or error in a `Result` object. It also
+   * executes an `andFinally` block after the try-catch, if provided. The return
+   * type of this function depends on whether the provided function `fn` is
+   * synchronous or asynchronous.
+   *
+   * @template T The type of the result expected from the function `fn`.
+   * @template F The type of the function to be executed. This can be a
+   * synchronous function returning `T` or an asynchronous function returning
+   * `Promise<T>`.
+   * @param {F} fn The function to be executed. This function should either
+   * return a value of type `T` or a `Promise<T>`.
+   * @param {() => void} andFinally An optional finally block function that will
+   * be executed after the
+   * try-catch block, regardless of the outcome.
+   * @returns {ReturnType<F> extends Promise<T> ? Promise<Result<T, string>> :
+   * Result<T, string>} If `fn` returns a `Promise<T>`, this function returns
+   * `Promise<Result<T, string>>`. If `fn` returns `T`, it returns
+   * `Result<T, string>`. The result contains either the value returned by `fn` or
+   * an error message if `fn` threw an error.
+   */
+  tryCatch,
 } as const;

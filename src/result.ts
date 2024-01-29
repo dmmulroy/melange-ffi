@@ -51,7 +51,7 @@ function error<E>(value: E): Error<E> {
  * @param {Result<T, E>} result The Result to check.
  * @returns {boolean} True if the Result is an Ok, false otherwise.
  */
-function isOk<T, E>(result: Result<T, E>): boolean {
+function isOk<T, E>(result: Result<T, E>): result is Ok<T> {
   return Melange_result.is_ok(result);
 }
 

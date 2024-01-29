@@ -103,9 +103,7 @@ describe("Option module", () => {
 
     it("should not modify the Option if it is None", () => {
       const noneOption = Option.none();
-      const fn = mock(() => {
-        return undefined;
-      });
+      const fn = mock(() => {});
       const mappedOption = Option.map(fn, noneOption);
       expect(Option.isNone(mappedOption)).toBeTrue();
       expect(fn).not.toHaveBeenCalled();
