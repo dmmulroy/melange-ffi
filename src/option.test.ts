@@ -94,7 +94,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.func(fc.anything()), (value, fn) => {
           const someOption: Option<any> = Option.some(value);
-          const mappedOption: Option<any> = Option.map(fn, someOption);
+          const mappedOption: Option<any> = Option.map(someOption, fn);
           expect(Option.isSome(mappedOption)).toBeTrue();
           expect(Option.unwrap(mappedOption)).toEqual(fn(value));
         }),
@@ -104,7 +104,7 @@ describe("Option module", () => {
     it("should not modify the Option if it is None", () => {
       const noneOption = Option.none();
       const fn = mock(() => {});
-      const mappedOption = Option.map(fn, noneOption);
+      const mappedOption = Option.map(noneOption, fn);
       expect(Option.isNone(mappedOption)).toBeTrue();
       expect(fn).not.toHaveBeenCalled();
     });
@@ -116,7 +116,7 @@ describe("Option module", () => {
           (value) => {
             const someOption = Option.some(value);
             const transformFn = (x: any) => x; // Identity function
-            const mappedOption = Option.map(transformFn, someOption);
+            const mappedOption = Option.map(someOption, transformFn);
             expect(Option.isSome(mappedOption)).toBeTrue();
             expect(Option.unwrap(mappedOption)).toEqual(value);
           },
@@ -132,7 +132,7 @@ describe("Option module", () => {
           const wrappedFn = (value: any) =>
             Option.some(fn(value)) as Option<any>;
           const someOption = Option.some(value);
-          const resultOption: Option<any> = Option.then(wrappedFn, someOption);
+          const resultOption: Option<any> = Option.then(someOption, wrappedFn);
           expect(Option.isSome(resultOption)).toBeTrue();
           expect(Option.unwrap(resultOption)).toEqual(fn(value));
         }),
@@ -144,7 +144,7 @@ describe("Option module", () => {
       const fn: (...args: any[]) => any = mock(() => {
         return undefined;
       });
-      const resultOption = Option.then(fn, noneOption);
+      const resultOption = Option.then(noneOption, fn);
       expect(Option.isNone(resultOption)).toBeTrue();
       expect(fn).not.toHaveBeenCalled();
     });
@@ -153,7 +153,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
           const someOption = Option.some(value);
-          const resultOption = Option.then(() => Option.none(), someOption);
+          const resultOption = Option.then(someOption, () => Option.none());
           expect(Option.isNone(resultOption)).toBeTrue();
         }),
       );
@@ -165,8 +165,8 @@ describe("Option module", () => {
           const someOption = Option.some(value);
           const transformFn = () => Option.some(newValue);
           const resultOption: Option<any> = Option.then(
-            transformFn,
             someOption,
+            transformFn,
           );
           expect(Option.isSome(resultOption)).toBeTrue();
           expect(Option.unwrap(resultOption)).toEqual(newValue);
@@ -180,7 +180,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), (value, defaultValue) => {
           const someOption = Option.some(value);
-          expect(Option.unwrapOr(defaultValue, someOption)).toEqual(value);
+          expect(Option.unwrapOr(someOption, defaultValue)).toEqual(value);
         }),
       );
     });
@@ -189,7 +189,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.integer(), (defaultValue) => {
           const noneOption = Option.none();
-          expect(Option.unwrapOr(defaultValue, noneOption)).toEqual(
+          expect(Option.unwrapOr(noneOption, defaultValue)).toEqual(
             defaultValue,
           );
         }),
@@ -218,7 +218,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.anything(), (value: any, error) => {
           const someOption = Option.some(value);
-          const result = Option.toResult(error, someOption);
+          const result = Option.toResult(someOption, error);
           expect(Result.isOk(result)).toBeTrue();
           expect(Result.unwrap(result)).toEqual(value);
         }),
@@ -229,7 +229,7 @@ describe("Option module", () => {
       fc.assert(
         fc.property(fc.anything(), (error) => {
           const noneOption = Option.none();
-          const result = Option.toResult(error, noneOption);
+          const result = Option.toResult(noneOption, error);
           expect(Result.isError(result)).toBeTrue();
           expect(() => Result.unwrap(result)).toThrow();
         }),

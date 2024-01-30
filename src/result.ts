@@ -82,11 +82,11 @@ function toOption<T, E>(result: Result<T, E>): Option<T> {
  * @template T The type of the value in the original Result.
  * @template U The type of the value in the new Result.
  * @template E The type of the error in the Result.
- * @param {(value: T) => U} fn The mapping function.
  * @param {Result<T, E>} result The original Result.
+ * @param {(value: T) => U} fn The mapping function.
  * @returns {Result<U, E>} The new Result after applying the mapping function.
  */
-function map<T, U, E>(fn: (value: T) => U, result: Result<T, E>): Result<U, E> {
+function map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> {
   return Melange_result.map(fn, result);
 }
 
@@ -95,26 +95,34 @@ function map<T, U, E>(fn: (value: T) => U, result: Result<T, E>): Result<U, E> {
  * @template T The type of the value in the original Result.
  * @template U The type of the value in the new Result.
  * @template E The type of the error in the Result.
- * @param {(value: T) => Result<U, E>} fn The function to apply.
  * @param {Result<T, E>} result The original Result.
+ * @param {(value: T) => Result<U, E>} fn The function to apply.
  * @returns {Result<U, E>} The new Result after applying the function.
  */
 function then<T, U, E>(
-  fn: (value: T) => Result<U, E>,
   result: Result<T, E>,
+  fn: (value: T) => Result<U, E>,
 ): Result<U, E> {
   return Melange_result.bind(result, fn);
+}
+
+// TODO: Docs + Tests
+function mapError<T, E, F>(
+  result: Result<T, E>,
+  fn: (error: E) => F,
+): Result<T, F> {
+  return Melange_result.map_error(fn, result);
 }
 
 /**
  * Unwraps a Result, returning the default value if it is an Error.
  * @template T The type of the value in the Result.
  * @template E The type of the error in the Result.
- * @param {T} defaultValue The default value to use if the Result is an Error.
  * @param {Result<T, E>} result The Result to unwrap.
+ * @param {T} defaultValue The default value to use if the Result is an Error.
  * @returns {T} The unwrapped value or the default value.
  */
-function unwrapOr<T, E>(defaultValue: T, result: Result<T, E>): T {
+function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
   return Melange_result.value(result, defaultValue);
 }
 
@@ -123,11 +131,63 @@ function unwrapOr<T, E>(defaultValue: T, result: Result<T, E>): T {
  * @template T The type of the value in the Result.
  * @template E The type of the error in the Result.
  * @param {Result<T, E>} result The Result to unwrap.
+ * @param {string} [errorMessage] An optional error message used if the Result is an Error
  * @returns {T} The unwrapped value.
  * @throws Will throw an error if the Result is an Error.
  */
-function unwrap<T, E>(result: Result<T, E>): T {
-  return Melange_result.get_ok(result);
+function unwrap<T, E>(result: Result<T, E>, errorMessage?: string): T {
+  try {
+    return Melange_result.get_ok(result);
+  } catch (err) {
+    if (errorMessage) {
+      throw new Error(errorMessage);
+    }
+    throw err;
+  }
+}
+
+export type ChainableResult<T, E> = Readonly<{
+  isOk(): boolean;
+  isError(): boolean;
+  map<U>(fn: (value: T) => U): ChainableResult<U, E>;
+  then<U>(fn: (value: T) => Result<U, E>): ChainableResult<U, E>;
+  mapError<F>(fn: (error: E) => F): ChainableResult<T, F>;
+  unwrapOr(or: T): T;
+  unwrap(errorMessage?: string): T;
+  toOption(): Option<T>;
+  toResult(): Result<T, E>;
+}>;
+
+function chain<T, E>(result: Result<T, E>): ChainableResult<T, E> {
+  return {
+    isOk() {
+      return Result.isOk(result);
+    },
+    isError() {
+      return Result.isError(result);
+    },
+    map(fn) {
+      return Result.chain(Result.map(result, fn));
+    },
+    then(fn) {
+      return Result.chain(Result.then(result, fn));
+    },
+    mapError(fn) {
+      return Result.chain(Result.mapError(result, fn));
+    },
+    unwrapOr(or) {
+      return Result.unwrapOr(result, or);
+    },
+    unwrap(errorMessage) {
+      return Result.unwrap(result, errorMessage);
+    },
+    toOption() {
+      return Result.toOption(result);
+    },
+    toResult() {
+      return result;
+    },
+  } as const satisfies ChainableResult<T, E>;
 }
 
 export const Result = {
@@ -161,6 +221,8 @@ export const Result = {
    * @returns {boolean} True if the Result is an Error, false otherwise.
    */
   isError,
+  // TODO
+  chain,
   /**
    * Converts a Result to an Option, discarding the error if present.
    * @template T The type of the value in the Result.
@@ -174,8 +236,8 @@ export const Result = {
    * @template T The type of the value in the original Result.
    * @template U The type of the value in the new Result.
    * @template E The type of the error in the Result.
-   * @param {(value: T) => U} fn The mapping function.
    * @param {Result<T, E>} result The original Result.
+   * @param {(value: T) => U} fn The mapping function.
    * @returns {Result<U, E>} The new Result after applying the mapping function.
    */
   map,
@@ -184,8 +246,8 @@ export const Result = {
    * @template T The type of the value in the original Result.
    * @template U The type of the value in the new Result.
    * @template E The type of the error in the Result.
-   * @param {(value: T) => Result<U, E>} fn The function to apply.
    * @param {Result<T, E>} result The original Result.
+   * @param {(value: T) => Result<U, E>} fn The function to apply.
    * @returns {Result<U, E>} The new Result after applying the function.
    */
   then,
@@ -193,16 +255,19 @@ export const Result = {
    * Unwraps a Result, returning the default value if it is an Error.
    * @template T The type of the value in the Result.
    * @template E The type of the error in the Result.
-   * @param {T} defaultValue The default value to use if the Result is an Error.
    * @param {Result<T, E>} result The Result to unwrap.
+   * @param {T} defaultValue The default value to use if the Result is an Error.
    * @returns {T} The unwrapped value or the default value.
    */
+  // TODO DOCS,
+  mapError,
   unwrapOr,
   /**
    * Unwraps a Result, throwing an error if it is an Error.
    * @template T The type of the value in the Result.
    * @template E The type of the error in the Result.
    * @param {Result<T, E>} result The Result to unwrap.
+   * @param {string} [errorMessage] An optional error message used if the Result is an Error
    * @returns {T} The unwrapped value.
    * @throws Will throw an error if the Result is an Error.
    */

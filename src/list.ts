@@ -5,6 +5,7 @@ import { Option } from "./option";
 import { Result } from "./result";
 import { ArrayOf, SingleTypeOf } from "./array";
 import { Nominal } from "./nominal";
+import { Fn } from "./function";
 
 declare const LIST: unique symbol;
 
@@ -64,32 +65,6 @@ function isEmpty<T>(list: List<T>): boolean {
 }
 
 /**
- * Checks if a value is a List.
- * Note: This can be an expensive operation, it will traverse the entire list.
- *
- * @param {unknown} maybeList The value to check.
- * @returns {boolean} True if the value is a List, false otherwise.
- */
-function isList(maybeList: unknown): boolean {
-  // Melange represents lists as { hd: value, tl: 0 | list }, hd will not be
-  // undefined or null. tl will be 0 if the list is empty or a list if it is
-  // not.
-  if (
-    (typeof maybeList === "object" &&
-      maybeList !== null &&
-      "hd" in maybeList &&
-      maybeList.hd !== undefined &&
-      maybeList.hd !== null &&
-      "tl" in maybeList &&
-      (maybeList.tl === 0 || isList(maybeList.tl))) ||
-    maybeList === 0
-  ) {
-    return true;
-  }
-  return false;
-}
-
-/**
  * Retrieves the first element of the list.
  * @template T The type of elements in the list.
  * @param {List<T>} list The list to retrieve the head from.
@@ -128,36 +103,36 @@ function tail<T>(list: List<T>): Option<List<T>> {
 /**
  * Prepends a value to the list.
  * @template T The type of elements in the list.
- * @param {T} value The value to prepend.
  * @param {List<T>} list The list to prepend the value to.
+ * @param {T} value The value to prepend.
  * @returns {List<T>} A new list with the value prepended.
  */
-function prepend<T>(value: T, list: List<T>): List<T> {
+function prepend<T>(list: List<T>, value: T): List<T> {
   return Melange_list.cons(value, list) as unknown as List<T>;
 }
 
 /**
  * Appends a value to the list.
  * @template T The type of elements in the list.
- * @param {T} value The value to append.
  * @param {List<T>} list The list to append the value to.
+ * @param {T} value The value to append.
  * @returns {List<T>} A new list with the value appended.
  */
-function append<T>(value: SingleTypeOf<T>, list: List<T>): List<T> {
+function append<T>(list: List<T>, value: SingleTypeOf<T>): List<T> {
   return Melange_list.append(list, List.ofArray([value]));
 }
 
 /**
  * Retrieves the element at a specified index in the list.
  * @template T The type of elements in the list.
- * @param {number} index The index of the element to retrieve.
  * @param {List<T>} list The list to retrieve the element from.
+ * @param {number} index The index of the element to retrieve.
  * @returns {Result<T, string>} A Result containing the element or an error message.
  */
-function at<T>(index: number, list: List<T>): Result<T, string> {
+function at<T>(list: List<T>, index: number): Result<T, string> {
   try {
     const maybeValue = Melange_list.nth_opt(list, index);
-    return Option.toResult("Not found", maybeValue);
+    return Option.toResult(maybeValue, "Not found");
   } catch (/** { RE_EXN_ID: "Invalid_argument", _1: "List.nth",*/ _) {
     return Result.error("Negative index");
   }
@@ -166,49 +141,42 @@ function at<T>(index: number, list: List<T>): Result<T, string> {
 /**
  * Finds an element in the list that satisfies a predicate.
  * @template T The type of elements in the list.
- * @param {(value: T) => boolean} predicate The function to test each element.
  * @param {List<T>} list The list to search.
+ * @param {(value: T) => boolean} predicate The function to test each element.
  * @returns {Result<T, string>} A Result containing the found element or an error message.
  */
 function find<T>(
-  predicate: (value: T) => boolean,
   list: List<T>,
+  predicate: (value: T) => boolean,
 ): Result<T, string> {
   const maybeValue = Melange_list.find_opt(predicate, list);
-  return Option.toResult("Not found", maybeValue);
+  return Option.toResult(maybeValue, "Not found");
 }
 
 /**
  * Transforms the elements in the list using a function.
  * @template T The type of elements in the original list.
  * @template U The type of elements in the new list.
- * @param {(value: T, index: number) => U} fn The function to apply to each element.
  * @param {List<T>} list The original list.
+ * @param {(value: T, index: number) => U} fn The function to apply to each element.
  * @returns {List<U>} A new list with transformed elements.
  */
-function map<T, U>(fn: (value: T, index: number) => U, list: List<T>): List<U> {
-  function flippedFn(idx: number, value: T) {
-    return fn(value, idx);
-  }
-
-  return Melange_list.mapi(flippedFn, list) as unknown as List<U>;
+function map<T, U>(list: List<T>, fn: (value: T, index: number) => U): List<U> {
+  return Melange_list.mapi(Fn.flip(fn), list) as unknown as List<U>;
 }
 
 /**
  * Filters the elements in the list based on a predicate.
  * @template T The type of elements in the list.
- * @param {(value: T, index: number) => boolean} predicate The function to test each element.
  * @param {List<T>} list The original list.
+ * @param {(value: T, index: number) => boolean} predicate The function to test each element.
  * @returns {List<T>} A new list with elements that satisfy the predicate.
  */
 function filter<T>(
-  predicate: (value: T, index: number) => boolean,
   list: List<T>,
+  predicate: (value: T, index: number) => boolean,
 ): List<T> {
-  function flippedPredicateFn(idx: number, value: T) {
-    return predicate(value, idx);
-  }
-  return Melange_list.filteri(flippedPredicateFn, list) as unknown as List<T>;
+  return Melange_list.filteri(Fn.flip(predicate), list) as unknown as List<T>;
 }
 
 /**
@@ -216,11 +184,11 @@ function filter<T>(
  * filters out None values.
  * @template T The type of elements in the original list.
  * @template U The type of elements in the new list.
- * @param {(value: T) => Option<U>} fn The function to apply to each element.
  * @param {List<T>} list The original list.
+ * @param {(value: T) => Option<U>} fn The function to apply to each element.
  * @returns {List<U>} A new list with non-null transformed elements.
  */
-function filterMap<T, U>(fn: (value: T) => Option<U>, list: List<T>): List<U> {
+function filterMap<T, U>(list: List<T>, fn: (value: T) => Option<U>): List<U> {
   return Melange_list.filter_map(fn, list) as unknown as List<U>;
 }
 
@@ -228,15 +196,15 @@ function filterMap<T, U>(fn: (value: T) => Option<U>, list: List<T>): List<U> {
  * Reduces the list to a single value by applying a function to each element and accumulating the results.
  * @template T The type of elements in the list.
  * @template U The type of the accumulator/result.
+ * @param {List<T>} list The list to reduce.
  * @param {(acc: U, value: T, index: number) => U} fn The reducer function.
  * @param {U} acc The initial accumulator value.
- * @param {List<T>} list The list to reduce.
  * @returns {U} The reduced value.
  */
 function reduce<T, U>(
+  list: List<T>,
   fn: (acc: U, value: T, index: number) => U,
   acc: U,
-  list: List<T>,
 ): U {
   // TODO: Consider writing types for Melanges runtime representation of Lists,
   // Results, Options and utilize them as part of the Branded types.
@@ -288,12 +256,6 @@ export const List = {
    */
   isEmpty,
   /**
-   * Checks if a value is a List.
-   * @param {unknown} maybeList The value to check.
-   * @returns {boolean} True if the value is a List, false otherwise.
-   */
-  isList,
-  /**
    * Retrieves the first element of the list.
    * @template T The type of elements in the list.
    * @param {List<T>} list The list to retrieve the head from.
@@ -310,32 +272,32 @@ export const List = {
   /**
    * Prepends a value to the list.
    * @template T The type of elements in the list.
-   * @param {T} value The value to prepend.
    * @param {List<T>} list The list to prepend the value to.
+   * @param {T} value The value to prepend.
    * @returns {List<T>} A new list with the value prepended.
    */
   prepend,
   /**
    * Appends a value to the list.
    * @template T The type of elements in the list.
-   * @param {T} value The value to append.
    * @param {List<T>} list The list to append the value to.
+   * @param {T} value The value to append.
    * @returns {List<T>} A new list with the value appended.
    */
   append,
   /**
    * Retrieves the element at a specified index in the list.
    * @template T The type of elements in the list.
-   * @param {number} index The index of the element to retrieve.
    * @param {List<T>} list The list to retrieve the element from.
+   * @param {number} index The index of the element to retrieve.
    * @returns {Result<T, string>} A Result containing the element or an error message.
    */
   at,
   /**
    * Finds an element in the list that satisfies a predicate.
    * @template T The type of elements in the list.
-   * @param {(value: T) => boolean} predicate The function to test each element.
    * @param {List<T>} list The list to search.
+   * @param {(value: T) => boolean} predicate The function to test each element.
    * @returns {Result<T, string>} A Result containing the found element or an error message.
    */
   find,
@@ -343,16 +305,16 @@ export const List = {
    * Transforms the elements in the list using a function.
    * @template T The type of elements in the original list.
    * @template U The type of elements in the new list.
-   * @param {(value: T, index: number) => U} fn The function to apply to each element.
    * @param {List<T>} list The original list.
+   * @param {(value: T, index: number) => U} fn The function to apply to each element.
    * @returns {List<U>} A new list with transformed elements.
    */
   map,
   /**
    * Filters the elements in the list based on a predicate.
    * @template T The type of elements in the list.
-   * @param {(value: T, index: number) => boolean} predicate The function to test each element.
    * @param {List<T>} list The original list.
+   * @param {(value: T, index: number) => boolean} predicate The function to test each element.
    * @returns {List<T>} A new list with elements that satisfy the predicate.
    */
   filter,
@@ -361,8 +323,8 @@ export const List = {
    * filters out None values.
    * @template T The type of elements in the original list.
    * @template U The type of elements in the new list.
-   * @param {(value: T) => Option<U>} fn The function to apply to each element.
    * @param {List<T>} list The original list.
+   * @param {(value: T) => Option<U>} fn The function to apply to each element.
    * @returns {List<U>} A new list with non-null transformed elements.
    */
   filterMap,
@@ -370,9 +332,9 @@ export const List = {
    * Reduces the list to a single value by applying a function to each element and accumulating the results.
    * @template T The type of elements in the list.
    * @template U The type of the accumulator/result.
+   * @param {List<T>} list The list to reduce.
    * @param {(acc: U, value: T, index: number) => U} fn The reducer function.
    * @param {U} acc The initial accumulator value.
-   * @param {List<T>} list The list to reduce.
    * @returns {U} The reduced value.
    */
   reduce,

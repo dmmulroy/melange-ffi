@@ -147,57 +147,6 @@ describe("List module", () => {
     });
   });
 
-  describe("isList", () => {
-    it("should return true for an empty list", () => {
-      const emptyList = List.empty();
-      expect(List.isList(emptyList)).toBe(true);
-    });
-
-    it("should return true for a non-empty list", () => {
-      const nonEmptyList = List.ofArray([1]);
-      expect(List.isList(nonEmptyList)).toBe(true);
-    });
-
-    it("should return false for non-list objects", () => {
-      const nonListObject = { hd: 1, tl: 2 }; // Object mimicking List structure
-      expect(List.isList(nonListObject)).toBe(false);
-    });
-
-    it("should return false for primitive types", () => {
-      fc.assert(
-        fc.property(
-          fc.oneof(
-            fc.integer().filter((n) => n !== 0),
-            fc.boolean(),
-            fc.string(),
-            fc.constant(null),
-            fc.constant(undefined),
-          ),
-          (primitive) => {
-            expect(List.isList(primitive)).toBe(false);
-          },
-        ),
-      );
-    });
-
-    it("should return false for arrays", () => {
-      fc.assert(
-        fc.property(fc.array(fc.anything()), (array) => {
-          expect(List.isList(array)).toBe(false);
-        }),
-      );
-    });
-
-    it("should return false for functions", () => {
-      const func = () => {};
-      expect(List.isList(func)).toBe(false);
-    });
-
-    it("should return true for a value that strictly equals 0", () => {
-      expect(List.isList(0)).toBe(true);
-    });
-  });
-
   describe("head", () => {
     it("should have the same first element as the array it was created from", () => {
       fc.assert(
@@ -278,7 +227,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
           const emptyList = List.empty();
-          const newList = List.prepend(value, emptyList);
+          const newList = List.prepend(emptyList, value);
           const head = Option.unwrap(List.head(newList));
           expect(head).toEqual(value);
         }),
@@ -289,7 +238,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.array(fc.anything()), (value, array) => {
           const list = List.ofArray(array);
-          const newList = List.prepend(value, list);
+          const newList = List.prepend(list, value);
           const head = Option.unwrap(List.head(newList));
           expect(head).toEqual(value);
         }),
@@ -300,7 +249,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.array(fc.anything()), (value, array) => {
           const list = List.ofArray(array);
-          const newList = List.prepend(value, list);
+          const newList = List.prepend(list, value);
           expect(List.length(newList)).toEqual(array.length + 1);
         }),
       );
@@ -312,7 +261,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
           const emptyList = List.empty();
-          const newList = List.append(value, emptyList);
+          const newList = List.append(emptyList, value);
           expect(List.toArray(newList)).toEqual([value]);
         }),
       );
@@ -322,7 +271,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.array(fc.anything()), (value, array) => {
           const list = List.ofArray(array);
-          const newList = List.append(value, list);
+          const newList = List.append(list, value);
           expect(List.toArray(newList)).toEqual([...array, value]);
         }),
       );
@@ -332,7 +281,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.array(fc.anything()), (value, array) => {
           const list = List.ofArray(array);
-          const newList = List.append(value, list);
+          const newList = List.append(list, value);
           expect(List.length(newList)).toEqual(array.length + 1);
         }),
       );
@@ -348,8 +297,8 @@ describe("List module", () => {
           (array: any[], index) => {
             const list: List<any> = List.ofArray(array);
             const result: Result<any, any> = List.at(
-              index % array.length,
               list,
+              index % array.length,
             );
             expect(Result.unwrap(result)).toEqual(array[index % array.length]);
           },
@@ -364,7 +313,7 @@ describe("List module", () => {
           fc.integer({ min: 0 }),
           (array, index) => {
             const list = List.ofArray(array);
-            const result = List.at(array.length + index, list);
+            const result = List.at(list, array.length + index);
             expect(Result.isError(result)).toBeTrue();
           },
         ),
@@ -378,7 +327,7 @@ describe("List module", () => {
           fc.integer({ max: -1 }),
           (array, index) => {
             const list = List.ofArray(array);
-            const result = List.at(index, list);
+            const result = List.at(list, index);
             expect(Result.isError(result)).toBeTrue();
           },
         ),
@@ -389,7 +338,7 @@ describe("List module", () => {
       fc.assert(
         fc.property(fc.integer(), (index) => {
           const emptyList = List.empty();
-          const result = List.at(index, emptyList);
+          const result = List.at(emptyList, index);
           expect(Result.isError(result)).toBeTrue();
         }),
       );
@@ -404,7 +353,7 @@ describe("List module", () => {
           (array: any[]) => {
             const list = List.ofArray(array);
             const predicate = (value: any) => value === array[0];
-            const result = List.find(predicate, list);
+            const result = List.find(list, predicate);
             expect(Result.unwrap(result)).toEqual(array[0]);
           },
         ),
@@ -416,7 +365,7 @@ describe("List module", () => {
         fc.property(fc.array(fc.anything(), { minLength: 1 }), (array) => {
           const list = List.ofArray(array);
           const predicate = () => false;
-          const result = List.find(predicate, list);
+          const result = List.find(list, predicate);
           expect(Result.isError(result)).toBeTrue();
         }),
       );
@@ -425,7 +374,7 @@ describe("List module", () => {
     it("should return an error for an empty list", () => {
       const emptyList = List.empty();
       const predicate = () => true;
-      const result = List.find(predicate, emptyList);
+      const result = List.find(emptyList, predicate);
       expect(Result.isError(result)).toBeTrue();
     });
   });
@@ -440,7 +389,7 @@ describe("List module", () => {
             const wrappedTransformFn = (value: any, _index: number) =>
               transformFn(value);
             const list: List<any> = List.ofArray(array);
-            const mappedList = List.map(wrappedTransformFn, list);
+            const mappedList = List.map(list, wrappedTransformFn);
             const expectedArray = array.map(wrappedTransformFn);
             expect(List.toArray(mappedList)).toEqual(expectedArray);
           },
@@ -451,7 +400,7 @@ describe("List module", () => {
     it("should return an empty list when mapping an empty list", () => {
       const emptyList: List<any> = List.empty();
       const transformFn = (x: number) => x * 2;
-      const mappedList = List.map(transformFn, emptyList);
+      const mappedList = List.map(emptyList, transformFn);
       expect(List.isEmpty(mappedList)).toBeTrue();
     });
 
@@ -460,7 +409,7 @@ describe("List module", () => {
         fc.property(fc.array(fc.anything(), { minLength: 2 }), (array) => {
           const list = List.ofArray(array);
           const transformFn = (value: any, index: number) => ({ value, index });
-          const mappedList = List.map(transformFn, list);
+          const mappedList = List.map(list, transformFn);
           const expectedArray = array.map(transformFn);
           expect(List.toArray(mappedList)).toEqual(expectedArray);
         }),
@@ -474,7 +423,7 @@ describe("List module", () => {
         fc.property(fc.array(fc.anything()), (array) => {
           const list = List.ofArray(array);
           const predicate = (_value: any, index: number) => index % 2 === 0; // Example predicate: keep elements at even indices
-          const filteredList = List.filter(predicate, list);
+          const filteredList = List.filter(list, predicate);
           const expectedArray = array.filter(predicate);
           expect(List.toArray(filteredList)).toEqual(expectedArray);
         }),
@@ -486,7 +435,7 @@ describe("List module", () => {
         fc.property(fc.array(fc.anything()), (array) => {
           const list = List.ofArray(array);
           const predicate = () => false; // Predicate that no element satisfies
-          const filteredList = List.filter(predicate, list);
+          const filteredList = List.filter(list, predicate);
           expect(List.isEmpty(filteredList)).toBeTrue();
         }),
       );
@@ -495,7 +444,7 @@ describe("List module", () => {
     it("should return an empty list when filtering an empty list", () => {
       const emptyList = List.empty();
       const predicate = () => true; // Any predicate
-      const filteredList = List.filter(predicate, emptyList);
+      const filteredList = List.filter(emptyList, predicate);
       expect(List.isEmpty(filteredList)).toBeTrue();
     });
   });
@@ -507,7 +456,7 @@ describe("List module", () => {
           const list = List.ofArray(array);
           const transformFn = (value: number) =>
             value % 2 === 0 ? Option.some(value * 2) : Option.none();
-          const filteredList = List.filterMap(transformFn, list);
+          const filteredList = List.filterMap(list, transformFn);
           const expectedArray = array
             .map(transformFn)
             .filter(Option.isSome)
@@ -522,7 +471,7 @@ describe("List module", () => {
         fc.property(fc.array(fc.anything()), (array) => {
           const list = List.ofArray(array);
           const transformFn = () => Option.none(); // Transformation function that always returns None
-          const filteredList = List.filterMap(transformFn, list);
+          const filteredList = List.filterMap(list, transformFn);
           expect(List.isEmpty(filteredList)).toBeTrue();
         }),
       );
@@ -531,7 +480,7 @@ describe("List module", () => {
     it("should return an empty list when applied to an empty list", () => {
       const emptyList = List.empty();
       const transformFn = (value: any) => Option.some(value); // Any transformation function
-      const filteredList = List.filterMap(transformFn, emptyList);
+      const filteredList = List.filterMap(emptyList, transformFn);
       expect(List.isEmpty(filteredList)).toBeTrue();
     });
 
@@ -541,7 +490,7 @@ describe("List module", () => {
           const list = List.ofArray(array);
           const transformFn = (value: number) =>
             value % 2 === 0 ? Option.some(value * 2) : Option.none();
-          const filteredList = List.filterMap(transformFn, list);
+          const filteredList = List.filterMap(list, transformFn);
           const expectedArray = array
             .map(transformFn)
             .filter(Option.isSome)
@@ -561,7 +510,7 @@ describe("List module", () => {
           (array, initialValue) => {
             const list = List.ofArray(array);
             const reducer = (acc: number, value: number) => acc + value;
-            const result = List.reduce(reducer, initialValue, list);
+            const result = List.reduce(list, reducer, initialValue);
             const expected = array.reduce(reducer, initialValue);
             expect(result).toEqual(expected);
           },
@@ -574,7 +523,7 @@ describe("List module", () => {
         fc.property(fc.integer(), (initialValue) => {
           const emptyList: List<any> = List.empty();
           const reducer = (acc: number, value: number) => acc + value;
-          const result = List.reduce(reducer, initialValue, emptyList);
+          const result = List.reduce(emptyList, reducer, initialValue);
           expect(result).toEqual(initialValue);
         }),
       );
@@ -589,7 +538,7 @@ describe("List module", () => {
             value: number,
             index: number,
           ) => acc.concat({ value, index });
-          const result = List.reduce(reducer, [], list);
+          const result = List.reduce(list, reducer, []);
           const expected = array.map((value, index) => ({ value, index }));
           expect(result).toEqual(expected);
         }),

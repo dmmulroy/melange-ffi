@@ -64,11 +64,11 @@ function isNone<T>(value: Option<T>): boolean {
  * Maps an Option to another using the provided function.
  * @template T The type of the value in the original Option.
  * @template U The type of the value in the new Option.
- * @param {(value: T) => U} fn The mapping function.
  * @param {Option<T>} option The original Option.
+ * @param {(value: T) => U} fn The mapping function.
  * @returns {Option<U>} The new Option after applying the mapping function.
  */
-function map<T, U>(fn: (value: T) => U, option: Option<T>): Option<U> {
+function map<T, U>(option: Option<T>, fn: (value: T) => U): Option<U> {
   return Melange_option.map(fn, option);
 }
 
@@ -76,22 +76,22 @@ function map<T, U>(fn: (value: T) => U, option: Option<T>): Option<U> {
  * Applies a function to an Option and flattens the result.
  * @template T The type of the value in the original Option.
  * @template U The type of the value in the new Option.
- * @param {(value: T) => Option<U>} fn The function to apply.
  * @param {Option<T>} option The original Option.
+ * @param {(value: T) => Option<U>} fn The function to apply.
  * @returns {Option<U>} The new Option after applying the function.
  */
-function then<T, U>(fn: (value: T) => Option<U>, option: Option<T>): Option<U> {
+function then<T, U>(option: Option<T>, fn: (value: T) => Option<U>): Option<U> {
   return Melange_option.bind(option, fn);
 }
 
 /**
  * Unwraps an Option, returning the default value if it is None.
  * @template T The type of the value, constrained to number.
- * @param {T} defaultValue The default value to return if Option is None.
  * @param {Option<T>} option The Option to unwrap.
+ * @param {T} defaultValue The default value to return if Option is None.
  * @returns {T} The unwrapped value or the default value.
  */
-function unwrapOr<T>(defaultValue: T, option: Option<T>): T {
+function unwrapOr<T>(option: Option<T>, defaultValue: T): T {
   return Melange_option.value(option, defaultValue);
 }
 
@@ -110,11 +110,11 @@ function unwrap<T>(option: Option<T>): T {
  * Converts an Option to a Result.
  * @template T The type of the value in the Option.
  * @template E The type of the error in the Result.
- * @param {E} error The error value to use in case of None.
  * @param {Option<T>} value The Option to convert.
+ * @param {E} error The error value to use in case of None.
  * @returns {Result<T, E>} The resulting Result object.
  */
-function toResult<T, E>(error: E, value: Option<T>): Result<T, E> {
+function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
   return Melange_option.to_result(error, value) as unknown as Result<T, E>;
 }
 
@@ -149,8 +149,8 @@ export const Option = {
    * Maps an Option to another using the provided function.
    * @template T The type of the value in the original Option.
    * @template U The type of the value in the new Option.
-   * @param {(value: T) => U} fn The mapping function.
    * @param {Option<T>} option The original Option.
+   * @param {(value: T) => U} fn The mapping function.
    * @returns {Option<U>} The new Option after applying the mapping function.
    */
   map,
@@ -158,16 +158,16 @@ export const Option = {
    * Applies a function to an Option and flattens the result.
    * @template T The type of the value in the original Option.
    * @template U The type of the value in the new Option.
-   * @param {(value: T) => Option<U>} fn The function to apply.
    * @param {Option<T>} option The original Option.
+   * @param {(value: T) => Option<U>} fn The function to apply.
    * @returns {Option<U>} The new Option after applying the function.
    */
   then,
   /**
    * Unwraps an Option, returning the default value if it is None.
    * @template T The type of the value, constrained to number.
-   * @param {T} defaultValue The default value to return if Option is None.
    * @param {Option<T>} option The Option to unwrap.
+   * @param {T} defaultValue The default value to return if Option is None.
    * @returns {T} The unwrapped value or the default value.
    */
   unwrapOr,
@@ -183,8 +183,8 @@ export const Option = {
    * Converts an Option to a Result.
    * @template T The type of the value in the Option.
    * @template E The type of the error in the Result.
-   * @param {E} error The error value to use in case of None.
    * @param {Option<T>} value The Option to convert.
+   * @param {E} error The error value to use in case of None.
    * @returns {Result<T, E>} The resulting Result object.
    */
   toResult,

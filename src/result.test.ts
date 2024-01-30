@@ -98,7 +98,7 @@ describe("Result module", () => {
           fc.func(fc.anything()),
           (value: any, fn: (...args: any[]) => any) => {
             const okResult = Result.ok(value);
-            const mappedResult = Result.map(fn, okResult);
+            const mappedResult = Result.map(okResult, fn);
             expect(Result.isOk(mappedResult)).toBeTrue();
             expect(Result.unwrap(mappedResult)).toEqual(fn(value));
           },
@@ -110,7 +110,7 @@ describe("Result module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.func(fc.anything()), (error, fn) => {
           const errorResult = Result.error(error);
-          const mappedResult = Result.map(fn, errorResult);
+          const mappedResult = Result.map(errorResult, fn);
           expect(Result.isError(mappedResult)).toBeTrue();
           expect(() => Result.unwrap(mappedResult)).toThrow();
         }),
@@ -125,7 +125,7 @@ describe("Result module", () => {
           (value: any, newValue: any) => {
             const okResult = Result.ok(value);
             const transformFn = () => newValue; // Transformation function
-            const mappedResult = Result.map(transformFn, okResult);
+            const mappedResult = Result.map(okResult, transformFn);
             expect(Result.isOk(mappedResult)).toBeTrue();
             expect(Result.unwrap(mappedResult)).toEqual(newValue);
           },
@@ -142,7 +142,7 @@ describe("Result module", () => {
           fc.func(fc.anything().map(Result.ok)),
           (value, fn) => {
             const okResult = Result.ok(value);
-            const result = Result.then(fn, okResult);
+            const result = Result.then(okResult, fn);
             expect(Result.isOk(result)).toBeTrue();
             expect(Result.unwrap(result)).toEqual(Result.unwrap(fn(value)));
           },
@@ -157,7 +157,7 @@ describe("Result module", () => {
           fc.func(fc.anything().map(Result.ok)),
           (error, fn) => {
             const errorResult = Result.error(error);
-            const result = Result.then(fn, errorResult);
+            const result = Result.then(errorResult, fn);
             expect(Result.isError(result)).toBeTrue();
             expect(() => Result.unwrap(result)).toThrow();
           },
@@ -169,9 +169,8 @@ describe("Result module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.anything(), (value, newError) => {
           const okResult = Result.ok(value);
-          const result = Result.then(
-            () => Result.error(newError as any),
-            okResult,
+          const result = Result.then(okResult, () =>
+            Result.error(newError as any),
           );
           expect(Result.isError(result)).toBeTrue();
           expect(() => Result.unwrap(result)).toThrow();
@@ -184,7 +183,7 @@ describe("Result module", () => {
         fc.property(fc.anything(), fc.anything(), (value, newValue: any) => {
           const okResult = Result.ok(value);
           const transformFn = () => Result.ok(newValue);
-          const result = Result.then(transformFn, okResult);
+          const result = Result.then(okResult, transformFn);
           expect(Result.isOk(result)).toBeTrue();
           expect(Result.unwrap(result)).toEqual(newValue);
         }),
@@ -197,7 +196,7 @@ describe("Result module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.anything(), (value, defaultValue) => {
           const okResult = Result.ok(value);
-          expect(Result.unwrapOr(defaultValue, okResult)).toEqual(value);
+          expect(Result.unwrapOr(okResult, defaultValue)).toEqual(value);
         }),
       );
     });
@@ -206,7 +205,7 @@ describe("Result module", () => {
       fc.assert(
         fc.property(fc.anything(), fc.anything(), (error, defaultValue) => {
           const errorResult = Result.error(error);
-          expect(Result.unwrapOr(defaultValue, errorResult)).toEqual(
+          expect(Result.unwrapOr(errorResult, defaultValue)).toEqual(
             defaultValue,
           );
         }),

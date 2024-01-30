@@ -1,6 +1,6 @@
 import { describe, expect, it, mock } from "bun:test";
 import fc from "fast-check";
-import { Function } from "./function";
+import { Fn } from "./function";
 import { Result } from ".";
 
 describe("Function module", () => {
@@ -9,7 +9,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), (a, b) => {
           const add = (x: number, y: number) => x + y;
-          const curriedAdd = Function.curry(add);
+          const curriedAdd = Fn.curry(add);
           expect(curriedAdd(a)(b)).toEqual(add(a, b));
         }),
       );
@@ -19,7 +19,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.integer(), (a) => {
           const add = (x: number, y: number) => x + y;
-          const curriedAdd = Function.curry(add);
+          const curriedAdd = Fn.curry(add);
           expect(typeof curriedAdd(a)).toBe("function");
         }),
       );
@@ -29,7 +29,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
           const addThree = (x: number, y: number, z: number) => x + y + z;
-          const curriedAddThree = Function.curry(addThree);
+          const curriedAddThree = Fn.curry(addThree);
           expect(curriedAddThree(a)(b)(c)).toEqual(addThree(a, b, c));
         }),
       );
@@ -39,7 +39,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
           const multiplyThree = (x: number, y: number, z: number) => x * y * z;
-          const curriedMultiplyThree = Function.curry(multiplyThree);
+          const curriedMultiplyThree = Fn.curry(multiplyThree);
           expect(curriedMultiplyThree(a, b, c)).toEqual(multiplyThree(a, b, c));
         }),
       );
@@ -50,7 +50,7 @@ describe("Function module", () => {
         fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
           const concatenateThree = (x: number, y: number, z: number) =>
             `${x}-${y}-${z}`;
-          const curriedConcatenateThree = Function.curry(concatenateThree);
+          const curriedConcatenateThree = Fn.curry(concatenateThree);
           const partiallyAppliedWithTwo = curriedConcatenateThree(a, b);
           expect(partiallyAppliedWithTwo(c)).toEqual(concatenateThree(a, b, c));
         }),
@@ -61,7 +61,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.anything(), (_) => {
           const returnFixedValue = () => 42;
-          const curriedReturnFixedValue = Function.curry(returnFixedValue);
+          const curriedReturnFixedValue = Fn.curry(returnFixedValue);
           expect(curriedReturnFixedValue()).toEqual(returnFixedValue());
         }),
       );
@@ -71,7 +71,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.integer(), fc.integer(), (a, b) => {
           const createAdder = (x: number) => (y: number) => x + y;
-          const curriedCreateAdder = Function.curry(createAdder);
+          const curriedCreateAdder = Fn.curry(createAdder);
           const adder = curriedCreateAdder(a);
           expect(typeof adder).toBe("function");
           expect(adder(b)).toEqual(createAdder(a)(b));
@@ -86,7 +86,7 @@ describe("Function module", () => {
             if (x > 0) throw new Error("Test error");
             return x;
           };
-          const curriedThrowError = Function.curry(throwError);
+          const curriedThrowError = Fn.curry(throwError);
           if (a > 0) {
             expect(() => curriedThrowError(a)).toThrow("Test error");
           } else {
@@ -100,7 +100,7 @@ describe("Function module", () => {
   describe("compose", () => {
     it("should return a ComposableFunction", () => {
       const identity = (x: number) => x;
-      const composedFunction = Function.compose(identity);
+      const composedFunction = Fn.compose(identity);
       expect(typeof composedFunction).toBe("function");
       expect(typeof composedFunction.compose).toBe("function");
     });
@@ -110,7 +110,7 @@ describe("Function module", () => {
         fc.property(fc.integer(), (a) => {
           const addOne = (x: number) => x + 1;
           const square = (x: number) => x * x;
-          const composedFunction = Function.compose(addOne).compose(square);
+          const composedFunction = Fn.compose(addOne).compose(square);
           expect(composedFunction(a)).toEqual(square(addOne(a)));
         }),
       );
@@ -121,7 +121,7 @@ describe("Function module", () => {
         fc.property(fc.integer(), (a) => {
           const addOne = (x: number) => x + 1;
           const square = (x: number) => x * x;
-          const composedFunction = Function.compose(square).compose(addOne);
+          const composedFunction = Fn.compose(square).compose(addOne);
           expect(composedFunction(a)).toEqual(addOne(square(a)));
         }),
       );
@@ -133,7 +133,7 @@ describe("Function module", () => {
           const addOne = (x: number) => x + 1;
           const square = (x: number) => x * x;
           const negate = (x: number) => -x;
-          const composedFunction = Function.compose(addOne)
+          const composedFunction = Fn.compose(addOne)
             .compose(square)
             .compose(negate);
           expect(composedFunction(a)).toEqual(negate(square(addOne(a))));
@@ -144,7 +144,7 @@ describe("Function module", () => {
     it("should work correctly with different types in composition", () => {
       const toString = (x: number) => x.toString();
       const concatHello = (x: string) => "Hello " + x;
-      const composedFunction = Function.compose(toString).compose(concatHello);
+      const composedFunction = Fn.compose(toString).compose(concatHello);
       expect(composedFunction(5)).toEqual("Hello 5");
     });
   });
@@ -152,13 +152,13 @@ describe("Function module", () => {
   describe("constant", () => {
     it("should return a function", () => {
       const value = 42;
-      const constantFunction = Function.constant(value);
+      const constantFunction = Fn.constant(value);
       expect(typeof constantFunction).toBe("function");
     });
 
     it("should always return the same value, irrespective of the arguments", () => {
       const value = 42;
-      const constantFunction = Function.constant(value);
+      const constantFunction = Fn.constant(value);
 
       expect(constantFunction()).toEqual(value);
       expect(constantFunction(10)).toEqual(value);
@@ -169,7 +169,7 @@ describe("Function module", () => {
     it("should work with different types of values", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
-          const constantFunction = Function.constant(value);
+          const constantFunction = Fn.constant(value);
           expect(constantFunction()).toEqual(value);
           expect(constantFunction("any", "number", "of", "arguments")).toEqual(
             value,
@@ -181,8 +181,8 @@ describe("Function module", () => {
     it("should create distinct functions for different values", () => {
       const firstValue = 42;
       const secondValue = "hello";
-      const firstConstantFunction = Function.constant(firstValue);
-      const secondConstantFunction = Function.constant(secondValue);
+      const firstConstantFunction = Fn.constant(firstValue);
+      const secondConstantFunction = Fn.constant(secondValue);
 
       expect(firstConstantFunction()).not.toEqual(secondConstantFunction());
     });
@@ -191,27 +191,27 @@ describe("Function module", () => {
   describe("flip", () => {
     it("should return a new function with arguments flipped", () => {
       const subtract = (a: number, b: number) => a - b;
-      const flippedSubtract = Function.flip(subtract);
+      const flippedSubtract = Fn.flip(subtract);
       expect(flippedSubtract(5, 10)).toEqual(subtract(10, 5));
     });
 
     it("should work correctly with different types of arguments", () => {
       const concat = (a: string, b: number) => a + b.toString();
-      const flippedConcat = Function.flip(concat);
+      const flippedConcat = Fn.flip(concat);
       expect(flippedConcat(5, "Number: ")).toEqual(concat("Number: ", 5));
     });
 
     it("should not affect the original function", () => {
       const multiply = (a: number, b: number) => a * b;
-      const flippedMultiply = Function.flip(multiply);
+      const flippedMultiply = Fn.flip(multiply);
       expect(multiply(3, 4)).toEqual(12);
       expect(flippedMultiply(3, 4)).toEqual(12);
     });
 
     it("should maintain correct functionality when flipped multiple times", () => {
       const divide = (a: number, b: number) => a / b;
-      const flippedDivide = Function.flip(divide);
-      const reFlippedDivide = Function.flip(flippedDivide);
+      const flippedDivide = Fn.flip(divide);
+      const reFlippedDivide = Fn.flip(flippedDivide);
       expect(flippedDivide(4, 2)).toEqual(divide(2, 4));
       expect(reFlippedDivide(4, 2)).toEqual(divide(4, 2));
     });
@@ -220,38 +220,38 @@ describe("Function module", () => {
   describe("identity", () => {
     it("should return the same value for numbers", () => {
       const num = 42;
-      expect(Function.identity(num)).toEqual(num);
+      expect(Fn.identity(num)).toEqual(num);
     });
 
     it("should return the same value for strings", () => {
       const str = "hello";
-      expect(Function.identity(str)).toEqual(str);
+      expect(Fn.identity(str)).toEqual(str);
     });
 
     it("should return the same value for objects", () => {
       const obj = { key: "value" };
-      expect(Function.identity(obj)).toEqual(obj);
+      expect(Fn.identity(obj)).toEqual(obj);
     });
 
     it("should return the same value for arrays", () => {
       const arr = [1, 2, 3];
-      expect(Function.identity(arr)).toEqual(arr);
+      expect(Fn.identity(arr)).toEqual(arr);
     });
 
     it("should return the same value for boolean values", () => {
       const bool = true;
-      expect(Function.identity(bool)).toEqual(bool);
+      expect(Fn.identity(bool)).toEqual(bool);
     });
 
     it("should return the same value for null and undefined", () => {
-      expect(Function.identity(null)).toEqual(null);
-      expect(Function.identity(undefined)).toEqual(undefined);
+      expect(Fn.identity(null)).toEqual(null);
+      expect(Fn.identity(undefined)).toEqual(undefined);
     });
 
     it("should work with different types of values", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
-          expect(Function.identity(value)).toEqual(value);
+          expect(Fn.identity(value)).toEqual(value);
         }),
       );
     });
@@ -262,7 +262,7 @@ describe("Function module", () => {
       fc.assert(
         fc.property(fc.anything(), (value) => {
           const sideEffectFn = () => {};
-          expect(Function.tap(sideEffectFn, value)).toEqual(value);
+          expect(Fn.tap(sideEffectFn, value)).toEqual(value);
         }),
       );
     });
@@ -274,7 +274,7 @@ describe("Function module", () => {
           const sideEffectFn = () => {
             sideEffectExecuted = true;
           };
-          Function.tap(sideEffectFn, value);
+          Fn.tap(sideEffectFn, value);
           expect(sideEffectExecuted).toBe(true);
         }),
       );
@@ -286,7 +286,7 @@ describe("Function module", () => {
           const errorFn = () => {
             throw new Error("Error in side-effect");
           };
-          expect(Function.tap(errorFn, value)).toEqual(value);
+          expect(Fn.tap(errorFn, value)).toEqual(value);
         }),
       );
     });
@@ -303,7 +303,7 @@ describe("Function module", () => {
               }, 1000),
             );
           };
-          Function.tap(asyncFn, value);
+          Fn.tap(asyncFn, value);
           expect(asyncExecuted).toBe(false);
         }),
       );
@@ -315,7 +315,7 @@ describe("Function module", () => {
           const asyncErrorFn = async () => {
             throw new Error("Async error");
           };
-          expect(Function.tap(asyncErrorFn, value)).toEqual(value);
+          expect(Fn.tap(asyncErrorFn, value)).toEqual(value);
         }),
       );
     });
@@ -327,7 +327,7 @@ describe("Function module", () => {
         fc.property(fc.anything(), (value) => {
           const fn = () => value;
           const andFinally = mock(() => {});
-          const result = Function.tryCatch(fn, andFinally);
+          const result = Fn.tryCatch(fn, andFinally);
           expect(Result.isOk(result)).toBe(true);
           expect(Result.unwrap(result)).toEqual(value);
           expect(andFinally).toHaveBeenCalled();
@@ -341,7 +341,7 @@ describe("Function module", () => {
         throw new Error(errorMessage);
       };
       const andFinally = mock(() => {});
-      const result = Function.tryCatch(fn, andFinally);
+      const result = Fn.tryCatch(fn, andFinally);
       expect(Result.isError(result)).toBe(true);
       expect(() => Result.unwrap(result)).toThrow();
       expect(andFinally).toHaveBeenCalled();
@@ -352,7 +352,7 @@ describe("Function module", () => {
         fc.asyncProperty(fc.anything(), async (value) => {
           const asyncFn = async () => value;
           const andFinally = mock(() => {});
-          const result = await Function.tryCatch(asyncFn, andFinally);
+          const result = await Fn.tryCatch(asyncFn, andFinally);
           expect(Result.isOk(result)).toBe(true);
           expect(andFinally).toHaveBeenCalled();
         }),
@@ -365,7 +365,7 @@ describe("Function module", () => {
         throw new Error(errorMessage);
       };
       const andFinally = mock(() => {});
-      const result = await Function.tryCatch(asyncFn, andFinally);
+      const result = await Fn.tryCatch(asyncFn, andFinally);
       expect(Result.isError(result)).toBe(true);
       expect(andFinally).toHaveBeenCalled();
     });
@@ -375,7 +375,7 @@ describe("Function module", () => {
         fc.property(fc.anything(), (value) => {
           const fn = () => value;
           const andFinally = mock(() => {});
-          const result = Function.tryCatch(fn, andFinally);
+          const result = Fn.tryCatch(fn, andFinally);
           if (value instanceof Promise) {
             expect(result).toBeInstanceOf(Promise);
           } else {

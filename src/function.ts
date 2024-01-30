@@ -533,7 +533,7 @@ function tryCatch<T, F extends (() => T) | (() => Promise<T>)>(
   }
 }
 
-export const Function = {
+export const Fn = {
   /**
    * Creates a `ComposableFunction` from a given function.
    * This `ComposableFunction` can then be composed with other functions using its
