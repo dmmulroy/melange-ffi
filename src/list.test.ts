@@ -1,7 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import fc from "fast-check";
 import { List } from "./list";
-import { Option, Result } from ".";
+import { Option } from "./option";
+import { Result } from "./result";
 
 describe("List module", () => {
   describe("length", () => {
