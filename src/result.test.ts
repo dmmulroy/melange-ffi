@@ -462,293 +462,293 @@ describe("Result module", () => {
         );
       });
     });
-  });
 
-  describe("chaining map and then", () => {
-    it("should allow chaining map and then together", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          fc.func(fc.anything().map((value) => Result.ok(value))),
-          (initialValue, mapFn, thenFn) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .map(mapFn)
-              .then(thenFn);
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(
-              Result.unwrap(thenFn(mapFn(initialValue)) as Result<any, any>),
-            );
-          },
-        ),
-      );
-    });
-  });
-
-  describe("chaining multiple map calls", () => {
-    it("should allow chaining multiple map calls", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          fc.func(fc.anything()),
-          (initialValue, mapFn1, mapFn2) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .map(mapFn1)
-              .map(mapFn2);
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(
-              mapFn2(mapFn1(initialValue)),
-            );
-          },
-        ),
-      );
-    });
-  });
-
-  describe("chaining mapError after map", () => {
-    it("should not affect Ok result when chaining mapError after map", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          (initialValue, mapFn) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .map(mapFn)
-              .mapError((error) => error);
-
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
+    describe("chaining map and then", () => {
+      it("should allow chaining map and then together", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            fc.func(fc.anything().map((value) => Result.ok(value))),
+            (initialValue, mapFn, thenFn) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .map(mapFn)
+                .then(thenFn);
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(
+                Result.unwrap(thenFn(mapFn(initialValue)) as Result<any, any>),
+              );
+            },
+          ),
+        );
+      });
     });
 
-    // Test for Error result
-    it("should transform Error when chaining mapError after map", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          (errorValue, mapErrorFn) => {
-            const chainedResult = Result.chain(Result.error(errorValue))
-              .map((value) => value)
-              .mapError(mapErrorFn);
+    describe("chaining multiple map calls", () => {
+      it("should allow chaining multiple map calls", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            fc.func(fc.anything()),
+            (initialValue, mapFn1, mapFn2) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .map(mapFn1)
+                .map(mapFn2);
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(
+                mapFn2(mapFn1(initialValue)),
+              );
+            },
+          ),
+        );
+      });
+    });
+
+    describe("chaining mapError after map", () => {
+      it("should not affect Ok result when chaining mapError after map", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            (initialValue, mapFn) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .map(mapFn)
+                .mapError((error) => error);
+
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
+
+      // Test for Error result
+      it("should transform Error when chaining mapError after map", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            (errorValue, mapErrorFn) => {
+              const chainedResult = Result.chain(Result.error(errorValue))
+                .map((value) => value)
+                .mapError(mapErrorFn);
+
+              expect(chainedResult.isError()).toBeTrue();
+              expect(() => chainedResult.unwrap()).toThrow();
+            },
+          ),
+        );
+      });
+    });
+
+    describe("chaining multiple then calls", () => {
+      it("should correctly chain multiple then calls starting with Ok", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything().map((value) => Result.ok(value))),
+            fc.func(fc.anything().map((value) => Result.ok(value))),
+            (initialValue, thenFn1, thenFn2) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .then(thenFn1)
+                .then(thenFn2);
+
+              const intermediateResult = thenFn1(initialValue);
+              let expectedValue = Result.isOk(intermediateResult)
+                ? Result.unwrap(thenFn2(Result.unwrap(intermediateResult)))
+                : null;
+
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(expectedValue);
+            },
+          ),
+        );
+      });
+
+      it("should not execute subsequent then calls after an Error", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything().map((value) => Result.ok(value))),
+            (errorValue, thenFn) => {
+              const chainedResult = Result.chain(Result.error(errorValue))
+                .then(thenFn)
+                .then(thenFn); // This second then should not be executed
+
+              expect(chainedResult.isError()).toBeTrue();
+              expect(() => chainedResult.unwrap()).toThrow();
+            },
+          ),
+        );
+      });
+    });
+
+    describe("chain with both map and mapError", () => {
+      it("should correctly apply map and mapError on an Ok result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            fc.func(fc.anything()),
+            (initialValue, mapFn, mapErrorFn) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .map(mapFn)
+                .mapError(mapErrorFn);
+
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
+
+      it("should correctly apply map and mapError on an Error result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            fc.func(fc.anything()),
+            (errorValue, mapFn, mapErrorFn) => {
+              const chainedResult = Result.chain(Result.error(errorValue))
+                .map(mapFn)
+                .mapError(mapErrorFn);
+
+              expect(chainedResult.isError()).toBeTrue();
+              expect(() => chainedResult.unwrap()).toThrow();
+            },
+          ),
+        );
+      });
+    });
+
+    describe("chain with unwrapOr at the end", () => {
+      // Test case for Ok result
+      it("should return the value for an Ok result when unwrapOr is used at the end", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.anything(),
+            fc.func(fc.anything()),
+            (initialValue, defaultValue, mapFn) => {
+              const chainedResult = Result.chain(Result.ok(initialValue))
+                .map(mapFn)
+                .unwrapOr(defaultValue);
+
+              expect(chainedResult).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
+
+      // Test case for Error result
+      it("should return the default value for an Error result when unwrapOr is used at the end", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.anything(),
+            (errorValue, defaultValue) => {
+              const chainedResult = Result.chain(
+                Result.error(errorValue),
+              ).unwrapOr(defaultValue);
+
+              expect(chainedResult).toEqual(defaultValue);
+            },
+          ),
+        );
+      });
+    });
+
+    describe("unwrap", () => {
+      it("should return the value for an Ok result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            (initialValue, mapFn) => {
+              const chainedResult = Result.chain(Result.ok(initialValue)).map(
+                mapFn,
+              );
+
+              expect(chainedResult.isOk()).toBeTrue();
+              expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
+
+      it("should throw an error for an Error result", () => {
+        fc.assert(
+          fc.property(fc.anything(), (errorValue) => {
+            const chainedResult = Result.chain(Result.error(errorValue));
 
             expect(chainedResult.isError()).toBeTrue();
             expect(() => chainedResult.unwrap()).toThrow();
-          },
-        ),
-      );
-    });
-  });
-
-  describe("chaining multiple then calls", () => {
-    it("should correctly chain multiple then calls starting with Ok", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything().map((value) => Result.ok(value))),
-          fc.func(fc.anything().map((value) => Result.ok(value))),
-          (initialValue, thenFn1, thenFn2) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .then(thenFn1)
-              .then(thenFn2);
-
-            const intermediateResult = thenFn1(initialValue);
-            let expectedValue = Result.isOk(intermediateResult)
-              ? Result.unwrap(thenFn2(Result.unwrap(intermediateResult)))
-              : null;
-
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(expectedValue);
-          },
-        ),
-      );
+          }),
+        );
+      });
     });
 
-    it("should not execute subsequent then calls after an Error", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything().map((value) => Result.ok(value))),
-          (errorValue, thenFn) => {
-            const chainedResult = Result.chain(Result.error(errorValue))
-              .then(thenFn)
-              .then(thenFn); // This second then should not be executed
+    describe("chain with toOption conversion", () => {
+      it("should convert an Ok result to a Some option with the same value", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            (initialValue, mapFn) => {
+              const option = Result.chain(Result.ok(initialValue))
+                .map(mapFn)
+                .toOption();
 
-            expect(chainedResult.isError()).toBeTrue();
-            expect(() => chainedResult.unwrap()).toThrow();
-          },
-        ),
-      );
-    });
-  });
+              expect(Option.isSome(option)).toBeTrue();
+              expect(Option.unwrap(option)).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
 
-  describe("chain with both map and mapError", () => {
-    it("should correctly apply map and mapError on an Ok result", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          fc.func(fc.anything()),
-          (initialValue, mapFn, mapErrorFn) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .map(mapFn)
-              .mapError(mapErrorFn);
+      it("should convert an Error result to a None option", () => {
+        fc.assert(
+          fc.property(fc.anything(), (errorValue) => {
+            const option = Result.chain(Result.error(errorValue)).toOption();
 
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
+            expect(Option.isNone(option)).toBeTrue();
+          }),
+        );
+      });
     });
 
-    it("should correctly apply map and mapError on an Error result", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          fc.func(fc.anything()),
-          (errorValue, mapFn, mapErrorFn) => {
-            const chainedResult = Result.chain(Result.error(errorValue))
-              .map(mapFn)
-              .mapError(mapErrorFn);
+    describe("chain with toResult conversion", () => {
+      it("should correctly convert an Ok ChainableResult back to an Ok Result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.func(fc.anything()),
+            (initialValue, mapFn) => {
+              const originalResult = Result.ok(initialValue);
+              const chainableResult = Result.chain(originalResult).map(mapFn);
+              const resultBack = chainableResult.toResult();
 
-            expect(chainedResult.isError()).toBeTrue();
-            expect(() => chainedResult.unwrap()).toThrow();
-          },
-        ),
-      );
-    });
-  });
+              expect(Result.isOk(resultBack)).toBeTrue();
+              expect(Result.unwrap(resultBack)).toEqual(mapFn(initialValue));
+            },
+          ),
+        );
+      });
 
-  describe("chain with unwrapOr at the end", () => {
-    // Test case for Ok result
-    it("should return the value for an Ok result when unwrapOr is used at the end", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.anything(),
-          fc.func(fc.anything()),
-          (initialValue, defaultValue, mapFn) => {
-            const chainedResult = Result.chain(Result.ok(initialValue))
-              .map(mapFn)
-              .unwrapOr(defaultValue);
-
-            expect(chainedResult).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
-    });
-
-    // Test case for Error result
-    it("should return the default value for an Error result when unwrapOr is used at the end", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.anything(),
-          (errorValue, defaultValue) => {
-            const chainedResult = Result.chain(
-              Result.error(errorValue),
-            ).unwrapOr(defaultValue);
-
-            expect(chainedResult).toEqual(defaultValue);
-          },
-        ),
-      );
-    });
-  });
-
-  describe("unwrap", () => {
-    it("should return the value for an Ok result", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          (initialValue, mapFn) => {
-            const chainedResult = Result.chain(Result.ok(initialValue)).map(
-              mapFn,
-            );
-
-            expect(chainedResult.isOk()).toBeTrue();
-            expect(chainedResult.unwrap()).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
-    });
-
-    it("should throw an error for an Error result", () => {
-      fc.assert(
-        fc.property(fc.anything(), (errorValue) => {
-          const chainedResult = Result.chain(Result.error(errorValue));
-
-          expect(chainedResult.isError()).toBeTrue();
-          expect(() => chainedResult.unwrap()).toThrow();
-        }),
-      );
-    });
-  });
-
-  describe("chain with toOption conversion", () => {
-    it("should convert an Ok result to a Some option with the same value", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          (initialValue, mapFn) => {
-            const option = Result.chain(Result.ok(initialValue))
-              .map(mapFn)
-              .toOption();
-
-            expect(Option.isSome(option)).toBeTrue();
-            expect(Option.unwrap(option)).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
-    });
-
-    it("should convert an Error result to a None option", () => {
-      fc.assert(
-        fc.property(fc.anything(), (errorValue) => {
-          const option = Result.chain(Result.error(errorValue)).toOption();
-
-          expect(Option.isNone(option)).toBeTrue();
-        }),
-      );
-    });
-  });
-
-  describe("chain with toResult conversion", () => {
-    it("should correctly convert an Ok ChainableResult back to an Ok Result", () => {
-      fc.assert(
-        fc.property(
-          fc.anything(),
-          fc.func(fc.anything()),
-          (initialValue, mapFn) => {
-            const originalResult = Result.ok(initialValue);
-            const chainableResult = Result.chain(originalResult).map(mapFn);
+      it("should correctly convert an Error ChainableResult back to an Error Result", () => {
+        fc.assert(
+          fc.property(fc.anything(), (errorValue) => {
+            const originalResult = Result.error(errorValue);
+            const chainableResult = Result.chain(originalResult);
             const resultBack = chainableResult.toResult();
 
-            expect(Result.isOk(resultBack)).toBeTrue();
-            expect(Result.unwrap(resultBack)).toEqual(mapFn(initialValue));
-          },
-        ),
-      );
-    });
-
-    it("should correctly convert an Error ChainableResult back to an Error Result", () => {
-      fc.assert(
-        fc.property(fc.anything(), (errorValue) => {
-          const originalResult = Result.error(errorValue);
-          const chainableResult = Result.chain(originalResult);
-          const resultBack = chainableResult.toResult();
-
-          expect(Result.isError(resultBack)).toBeTrue();
-          // As there's no direct API to unwrap errors, we test this way
-          expect(() => Result.unwrap(resultBack)).toThrow();
-        }),
-      );
+            expect(Result.isError(resultBack)).toBeTrue();
+            // As there's no direct API to unwrap errors, we test this way
+            expect(() => Result.unwrap(resultBack)).toThrow();
+          }),
+        );
+      });
     });
   });
 });
