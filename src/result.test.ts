@@ -234,6 +234,82 @@ describe("Result module", () => {
         );
       });
     });
+
+    describe("mapError", () => {
+      it("should transform the error for an Error result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(), // Generates any value for the error
+            fc.func(fc.anything()), // Generates a function to transform the error
+            (errorValue, errorTransformFn) => {
+              const originalResult = Result.error(errorValue);
+              const transformedResult = Result.mapError(
+                originalResult,
+                errorTransformFn,
+              );
+
+              expect(Result.isError(transformedResult)).toBeTrue();
+              expect(Result.unwrapError(transformedResult, undefined)).toEqual(
+                errorTransformFn(errorValue),
+              );
+            },
+          ),
+        );
+      });
+
+      // Test that mapError does not affect the result if it's Ok
+      it("should not affect the result if it's Ok", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(), // Generates any value for Ok
+            fc.func(fc.anything()), // Generates a function, but it won't be used
+            (okValue, errorTransformFn) => {
+              const originalResult = Result.ok(okValue);
+              const transformedResult = Result.mapError(
+                originalResult,
+                errorTransformFn,
+              );
+
+              expect(Result.isOk(transformedResult)).toBeTrue();
+              expect(Result.unwrap(transformedResult)).toEqual(okValue);
+            },
+          ),
+        );
+      });
+    });
+
+    describe("unwrapError", () => {
+      // Test that unwrapError returns the error for an Error result
+      it("should return the error for an Error result", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.anything(),
+            (errorValue, defaultValue) => {
+              const errorResult = Result.error(errorValue);
+              const unwrappedError = Result.unwrapError(
+                errorResult,
+                defaultValue,
+              );
+
+              expect(unwrappedError).toEqual(errorValue);
+            },
+          ),
+        );
+      });
+
+      // Test that unwrapError returns the default error value for an Ok result
+      it("should return the default error value for an Ok result", () => {
+        fc.assert(
+          fc.property(fc.anything(), fc.anything(), (okValue, defaultValue) => {
+            const okResult = Result.ok(okValue);
+            const unwrappedError = Result.unwrapError(okResult, defaultValue);
+
+            expect(unwrappedError).toEqual(defaultValue);
+          }),
+        );
+      });
+    });
   });
 
   describe("ChainableResult", () => {
@@ -746,6 +822,34 @@ describe("Result module", () => {
             expect(Result.isError(resultBack)).toBeTrue();
             // As there's no direct API to unwrap errors, we test this way
             expect(() => Result.unwrap(resultBack)).toThrow();
+          }),
+        );
+      });
+    });
+
+    describe("ChainableResult unwrapError", () => {
+      // Test that unwrapError returns the error for an Error ChainableResult
+      it("should return the error for an Error ChainableResult", () => {
+        fc.assert(
+          fc.property(
+            fc.anything(),
+            fc.anything(),
+            (errorValue, defaultValue) => {
+              const errorResult = Result.chain(Result.error(errorValue));
+              const unwrappedError = errorResult.unwrapError(defaultValue);
+              expect(unwrappedError).toEqual(errorValue);
+            },
+          ),
+        );
+      });
+
+      // Test that unwrapError returns the default error value for an Ok ChainableResult
+      it("should return the default error value for an Ok ChainableResult", () => {
+        fc.assert(
+          fc.property(fc.anything(), fc.anything(), (okValue, defaultValue) => {
+            const okResult = Result.chain(Result.ok(okValue));
+            const unwrappedError = okResult.unwrapError(defaultValue);
+            expect(unwrappedError).toEqual(defaultValue);
           }),
         );
       });
