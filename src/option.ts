@@ -103,6 +103,7 @@ function unwrapOr<T>(option: Option<T>, defaultValue: T): T {
  * @throws Will throw an error if the Option is None.
  */
 function unwrap<T>(option: Option<T>): T {
+  // TODO: Add optional error message
   return Melange_option.get(option);
 }
 
@@ -116,6 +117,54 @@ function unwrap<T>(option: Option<T>): T {
  */
 function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
   return Melange_option.to_result(error, value) as unknown as Result<T, E>;
+}
+
+export type ChainableOption<T> = Readonly<{
+  isSome(): boolean;
+  isNone(): boolean;
+  map<U>(fn: (value: T) => U): ChainableOption<U>;
+  then<U>(fn: (value: T) => Option<U>): ChainableOption<U>;
+  unwrapOr(defaultValue: T): T;
+  unwrap(errorMessage?: string): T;
+  toResult<E>(error: E): Result<T, E>;
+}>;
+
+/**
+ * Converts a Option into a ChainableOption, enabling chainable operations.
+ * This function allows for fluent method chaining on Option types, such as
+ * map, then, and more.
+ *
+ * @template T The type of the value in the original Option for successful case.
+ * @param {Option<T>} option The original Option to be converted into a ChainableOption.
+ * @returns {ChainableOption<T>} A ChainableOption, encapsulating the original Option and providing chainable methods.
+ */
+function chain<T>(option: Option<T>): ChainableOption<T> {
+  return {
+    isSome() {
+      return Option.isSome(option);
+    },
+    isNone() {
+      return Option.isNone(option);
+    },
+    map(fn) {
+      return Option.chain(Option.map(option, fn));
+    },
+    then(fn) {
+      return Option.chain(Option.then(option, fn));
+    },
+    unwrapOr(defaultValue) {
+      return Option.unwrapOr(option, defaultValue);
+    },
+    // TODO: Add optional error message
+    unwrap(_errorMessage) {
+      return Option.unwrap(option);
+    },
+    toResult(error) {
+      return Option.toResult(option, error);
+    },
+    // TODO: Add toChainableResult
+    // TODO: Add toList and toChainableList
+  } as const satisfies ChainableOption<T>;
 }
 
 export const Option = {
@@ -145,6 +194,16 @@ export const Option = {
    * @returns {boolean} True if the Option is None, false otherwise.
    */
   isNone,
+  /**
+   * Converts a Option into a ChainableOption, enabling chainable operations.
+   * This function allows for fluent method chaining on Option types, such as
+   * map, then, and more.
+   *
+   * @template T The type of the value in the original Option for successful case.
+   * @param {Option<T>} option The original Option to be converted into a ChainableOption.
+   * @returns {ChainableOption<T>} A ChainableOption, encapsulating the original Option and providing chainable methods.
+   */
+  chain,
   /**
    * Maps an Option to another using the provided function.
    * @template T The type of the value in the original Option.

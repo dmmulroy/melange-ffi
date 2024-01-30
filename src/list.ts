@@ -1,11 +1,13 @@
 import * as Melange_list from "../vendor/melange/list.mjs";
 import * as Melange_array from "../vendor/melange/array.mjs";
 
-import { Option } from "./option";
-import { Result } from "./result";
+import { ChainableOption, Option } from "./option";
+import { ChainableResult, Result } from "./result";
 import { ArrayOf, SingleTypeOf } from "./array";
 import { Nominal } from "./nominal";
 import { Fn } from "./function";
+
+// TODO: Use SingleTypeOf for the List type.
 
 declare const LIST: unique symbol;
 
@@ -145,6 +147,7 @@ function at<T>(list: List<T>, index: number): Result<T, string> {
  * @param {(value: T) => boolean} predicate The function to test each element.
  * @returns {Result<T, string>} A Result containing the found element or an error message.
  */
+// TODO: Use Option instead of Result for find.
 function find<T>(
   list: List<T>,
   predicate: (value: T) => boolean,
@@ -219,6 +222,19 @@ function reduce<T, U>(
     melangeList = melangeList.tl;
   }
 }
+
+type ChainableList<T> = Readonly<{
+  length(): number;
+  toArray(): T[];
+  isEmpty(): boolean;
+  head(): ChainableOption<T>;
+  tail(): ChainableOption<ChainableList<T>>;
+  prepend(value: T): ChainableList<T>;
+  append(value: T): ChainableList<T>;
+  at(index: number): ChainableResult<T, string>;
+  find(predicate: (value: T) => boolean): ChainableOption<T>;
+  map<U>(fn: (value: T, index: number) => U): ChainableList<U>;
+}>;
 
 export const List = {
   /**
