@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import fc from "fast-check";
 import { Result } from "./result";
 import { Option } from "./option";
+import { List } from "./list";
 
 describe("Result module", () => {
   describe("Result", () => {
@@ -87,6 +88,28 @@ describe("Result module", () => {
             const errorResult = Result.error(error);
             const option = Result.toOption(errorResult);
             expect(Option.isNone(option)).toBeTrue();
+          }),
+        );
+      });
+    });
+
+    describe("toList", () => {
+      it("should convert an Ok result to a list with the Ok value as the single item", () => {
+        fc.assert(
+          fc.property(fc.anything(), (value: any) => {
+            const okResult = Result.ok(value);
+            const list = Result.toList(okResult);
+            expect(Option.unwrap(List.head(list))).toEqual(value);
+          }),
+        );
+      });
+
+      it("should convert an Error result to an empty list", () => {
+        fc.assert(
+          fc.property(fc.anything(), (error) => {
+            const okResult = Result.error(error);
+            const list = Result.toList(okResult);
+            expect(List.length(list)).toEqual(0);
           }),
         );
       });
@@ -789,6 +812,26 @@ describe("Result module", () => {
             const option = Result.chain(Result.error(errorValue)).toOption();
 
             expect(Option.isNone(option)).toBeTrue();
+          }),
+        );
+      });
+    });
+
+    describe("chain with toList conversion", () => {
+      it("should convert an Ok result to a list with the Ok value as the single item", () => {
+        fc.assert(
+          fc.property(fc.anything(), (value: any) => {
+            const list = Result.chain(Result.ok(value)).toList();
+            expect(Option.unwrap(List.head(list))).toEqual(value);
+          }),
+        );
+      });
+
+      it("should convert an Error result to an empty list", () => {
+        fc.assert(
+          fc.property(fc.anything(), (error) => {
+            const list = Result.chain(Result.error(error)).toList();
+            expect(List.length(list)).toEqual(0);
           }),
         );
       });

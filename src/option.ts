@@ -1,6 +1,7 @@
+import { ChainableList, List } from ".";
 import * as Melange_option from "../vendor/melange/option.mjs";
 import { Nominal } from "./nominal";
-import { Result } from "./result";
+import { ChainableResult, Result } from "./result";
 
 declare const SOME: unique symbol;
 declare const NONE: unique symbol;
@@ -128,6 +129,43 @@ function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
 }
 
 /**
+ * Converts an Option to a ChainableResult.
+ * @template T The type of the value in the Option.
+ * @template E The type of the error in the Result.
+ * @param {Option<T>} value The Option to convert.
+ * @param {E} error The error value to use in case of None.
+ * @returns {ChainableResult<T, E>} The resulting ChainableResult object.
+ */
+function toChainableResult<T, E>(
+  value: Option<T>,
+  error: E,
+): ChainableResult<T, E> {
+  return Result.chain(
+    Melange_option.to_result(error, value) as unknown as Result<T, E>,
+  ) as unknown as ChainableResult<T, E>;
+}
+
+/**
+ * Converts the Option to a List, with the Some value as the single element.
+ * @param {Option<T>} value The Option to convert.
+ * @returns {List<T>} A List containing the Some value, or an empty List if the option is None.
+ */
+function toList<T>(value: Option<T>): List<T> {
+  return Melange_option.to_list(value) as unknown as List<T>;
+}
+
+/**
+ * Converts the Result to a ChainableList, with the Ok value as the single element.
+ * @param {Option<T>} value The Option to convert.
+ * @returns {ChainableList<T>} A ChainableList containing the Ok value, or an empty List if the result is an Error.
+ */
+function toChainableList<T>(value: Option<T>): ChainableList<T> {
+  return List.chain(
+    Melange_option.to_list(value) as unknown as List<T>,
+  ) as unknown as ChainableList<T>;
+}
+
+/**
  * Represents a chinable option type, encapsulating an optional value.
  * @template T The type of the value.
  */
@@ -182,6 +220,26 @@ export type ChainableOption<T> = Readonly<{
    * @returns {Result<T, E>} The resulting Result object.
    */
   toResult<E>(error: E): Result<T, E>;
+
+  /**
+   * Converts an Option to a ChainableResult.
+   * @template T The type of the value in the Option.
+   * @template E The type of the error in the Result.
+   * @param {E} error The error value to use in case of None.
+   * @returns {Result<T, E>} The resulting Result object.
+   */
+  toChainableResult<E>(error: E): ChainableResult<T, E>;
+  /**
+   * Converts the ChainableResult to a List, with the Ok value as the single element.
+   * @returns {List<T>} A List containing the Ok value, or an empty List if the result is an Error.
+   */
+  toList(): List<T>;
+
+  /**
+   * Converts the ChainableResult to a ChainableList, with the Ok value as the single element.
+   * @returns {ChainableList<T>} A ChainableList containing the Ok value, or an empty List if the result is an Error.
+   */
+  toChainableList(): ChainableList<T>;
 }>;
 
 /**
@@ -216,7 +274,15 @@ function chain<T>(option: Option<T>): ChainableOption<T> {
     toResult(error) {
       return Option.toResult(option, error);
     },
-    // TODO: Add toChainableResult
+    toChainableResult(error) {
+      return Option.toChainableResult(option, error);
+    },
+    toList() {
+      return Option.toList(option);
+    },
+    toChainableList() {
+      return Option.toChainableList(option);
+    },
     // TODO: Add toList and toChainableList
   } as const satisfies ChainableOption<T>;
 }
@@ -301,4 +367,23 @@ export const Option = {
    * @returns {Result<T, E>} The resulting Result object.
    */
   toResult,
+  /**
+   * Converts an Option to a ChainableResult.
+   * @template T The type of the value in the Option.
+   * @template E The type of the error in the Result.
+   * @param {Option<T>} value The Option to convert.
+   * @param {E} error The error value to use in case of None.
+   * @returns {ChainableResult<T, E>} The resulting ChainableResult object.
+   */
+  toChainableResult,
+  /**
+   * Converts the ChainableResult to a List, with the Ok value as the single element.
+   * @returns {List<T>} A List containing the Ok value, or an empty List if the result is an Error.
+   */
+  toList,
+  /**
+   * Converts the Result to a ChainableList, with the Ok value as the single element.
+   * @returns {ChainableList<T>} A ChainableList containing the Ok value, or an empty List if the result is an Error.
+   */
+  toChainableList,
 };

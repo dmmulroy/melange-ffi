@@ -2,6 +2,7 @@ import { describe, expect, it, mock } from "bun:test";
 import fc from "fast-check";
 import { Option } from "./option";
 import { Result } from "./result";
+import { List } from "./list";
 
 describe("Option module", () => {
   describe("Option", () => {
@@ -241,6 +242,28 @@ describe("Option module", () => {
         );
       });
     });
+
+    describe("toList", () => {
+      it("should convert a Some value to a list with the Some value as the single item", () => {
+        fc.assert(
+          fc.property(fc.anything(), (value: any) => {
+            const someOption = Option.some(value);
+            const list = Option.toList(someOption);
+            expect(Option.unwrap(List.head(list))).toEqual(value);
+          }),
+        );
+      });
+
+      it("should convert a None option to an empty list", () => {
+        fc.assert(
+          fc.property(fc.anything(), () => {
+            const noneOption = Option.none();
+            const list = Option.toList(noneOption);
+            expect(List.length(list)).toEqual(0);
+          }),
+        );
+      });
+    });
   });
 
   describe("ChainableOption", () => {
@@ -365,6 +388,31 @@ describe("Option module", () => {
             const resultError = Result.chain(noneOption.toResult(error));
             expect(resultError.isError()).toBeTrue();
             expect(() => resultError.unwrap()).toThrow();
+          }),
+        );
+      });
+    });
+
+    describe("toList", () => {
+      it("should convert a Some value to a list with the Some value as the single item", () => {
+        fc.assert(
+          fc.property(fc.anything(), (value: any) => {
+            const valueOption = Option.chain(Option.some(value))
+              .toChainableList()
+              .head()
+              .unwrap();
+            expect(valueOption).toEqual(value);
+          }),
+        );
+      });
+
+      it("should convert a None option to an empty list", () => {
+        fc.assert(
+          fc.property(fc.anything(), () => {
+            const length = Option.chain(Option.none())
+              .toChainableList()
+              .length();
+            expect(length).toEqual(0);
           }),
         );
       });
