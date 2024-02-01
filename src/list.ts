@@ -234,6 +234,9 @@ type ChainableList<T> = Readonly<{
   at(index: number): ChainableResult<T, string>;
   find(predicate: (value: T) => boolean): ChainableOption<T>;
   map<U>(fn: (value: T, index: number) => U): ChainableList<U>;
+  filter(predicate: (value: T, index: number) => boolean): ChainableList<T>;
+  filterMap<U>(fn: (value: T) => Option<U>): ChainableList<U>;
+  reduce<U>(fn: (acc: U, value: T, index: number) => U, acc: U): U;
 }>;
 
 export const List = {
