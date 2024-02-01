@@ -15,7 +15,7 @@ declare const LIST: unique symbol;
  * Represents a linked list type.
  * @template T The type of elements in the list.
  */
-export type List<T> = Nominal<T, typeof LIST>;
+export type List<T> = Nominal<SingleTypeOf<T>, typeof LIST>;
 
 /**
  * Gets the length of the list.
@@ -53,7 +53,7 @@ function toArray<T>(list: List<T>): T[] {
  * @returns {List<T>} An empty List.
  */
 function empty<T>(): List<T> {
-  return List.ofArray([]);
+  return List.ofArray([]) as unknown as List<T>;
 }
 
 /**
@@ -145,15 +145,10 @@ function at<T>(list: List<T>, index: number): Result<T, string> {
  * @template T The type of elements in the list.
  * @param {List<T>} list The list to search.
  * @param {(value: T) => boolean} predicate The function to test each element.
- * @returns {Result<T, string>} A Result containing the found element or an error message.
+ * @returns {Option<T>} A Option containing the found element or None if not found.
  */
-// TODO: Use Option instead of Result for find.
-function find<T>(
-  list: List<T>,
-  predicate: (value: T) => boolean,
-): Result<T, string> {
-  const maybeValue = Melange_list.find_opt(predicate, list);
-  return Option.toResult(maybeValue, "Not found");
+function find<T>(list: List<T>, predicate: (value: T) => boolean): Option<T> {
+  return Melange_list.find_opt(predicate, list);
 }
 
 /**
@@ -202,7 +197,7 @@ function filterMap<T, U>(list: List<T>, fn: (value: T) => Option<U>): List<U> {
  * @param {List<T>} list The list to reduce.
  * @param {(acc: U, value: T, index: number) => U} fn The reducer function.
  * @param {U} acc The initial accumulator value.
- * @returns {U} The reduced value.
+ * @returnOperatorOperatorOperatoes {U} The reduced value.
  */
 function reduce<T, U>(
   list: List<T>,
@@ -223,23 +218,168 @@ function reduce<T, U>(
   }
 }
 
-type ChainableList<T> = Readonly<{
+/**
+ * Represents a chainable linked list type.
+ * @template T The type of elements in the list.
+ */
+export type ChainableList<T> = Readonly<{
+  /**
+   * Gets the length of the list.
+   * @template T The type of elements in the list.
+   * @returns {number} The length of the list.
+   */
   length(): number;
+  /**
+   * Converts a List to an array.
+   * @template T The type of elements in the list.
+   * @returns {T[]} An array containing the elements of the list.
+   */
   toArray(): T[];
+  /**
+   * Checks if a List is empty.
+   * @template T The type of elements in the list.
+   * @returns {boolean} True if the list is empty, false otherwise.
+   */
   isEmpty(): boolean;
+  /**
+   * Retrieves the first element of the list.
+   * @template T The type of elements in the list.
+   * @returns {Option<T>} The first element of the list or None if the list is empty.
+   */
   head(): ChainableOption<T>;
+  /**
+   * Retrieves all elements of the list except the first.
+   * @template T The type of elements in the list.
+   * @returns {Option<List<T>>} The tail of the list or None if the list is empty.
+   */
   tail(): ChainableOption<ChainableList<T>>;
+  /**
+   * Prepends a value to the list.
+   * @template T The type of elements in the list.
+   * @param {T} value The value to prepend.
+   * @returns {List<T>} A new list with the value prepended.
+   */
   prepend(value: T): ChainableList<T>;
-  append(value: T): ChainableList<T>;
+  /**
+   * Appends a value to the list.
+   * @template T The type of elements in the list.
+   * @param {T} value The value to append.
+   * @returns {List<T>} A new list with the value appended.
+   */
+  append(value: SingleTypeOf<T>): ChainableList<T>;
+  /**
+   * Retrieves the element at a specified index in the list.
+   * @template T The type of elements in the list.
+   * @param {number} index The index of the element to retrieve.
+   * @returns {Result<T, string>} A Result containing the element or an error message.
+   */
   at(index: number): ChainableResult<T, string>;
+  /**
+   * Finds an element in the list that satisfies a predicate.
+   * @template T The type of elements in the list.
+   * @param {(value: T) => boolean} predicate The function to test each element.
+   * @returns {Option<T>} A Option containing the found element or None if not found.
+   */
   find(predicate: (value: T) => boolean): ChainableOption<T>;
+  /**
+   * Transforms the elements in the list using a function.
+   * @template T The type of elements in the original list.
+   * @template U The type of elements in the new list.
+   * @param {(value: T, index: number) => U} fn The function to apply to each element.
+   * @returns {List<U>} A new list with transformed elements.
+   */
   map<U>(fn: (value: T, index: number) => U): ChainableList<U>;
+  /**
+   * Filters the elements in the list based on a predicate.
+   * @template T The type of elements in the list.
+   * @param {(value: T, index: number) => boolean} predicate The function to test each element.
+   * @returns {List<T>} A new list with elements that satisfy the predicate.
+   */
   filter(predicate: (value: T, index: number) => boolean): ChainableList<T>;
+  /**
+   * Applies a function that returns an Option<T> to each element in the list and
+   * filters out None values.
+   * @template T The type of elements in the original list.
+   * @template U The type of elements in the new list.
+   * @param {(value: T) => Option<U>} fn The function to apply to each element.
+   * @returns {List<U>} A new list with non-null transformed elements.
+   */
   filterMap<U>(fn: (value: T) => Option<U>): ChainableList<U>;
+  /**
+   * Reduces the list to a single value by applying a function to each element and accumulating the results.
+   * @template T The type of elements in the list.
+   * @template U The type of the accumulator/result.
+   * @param {(acc: U, value: T, index: number) => U} fn The reducer function.
+   * @param {U} acc The initial accumulator value.
+   * @returnOperatorOperatorOperatoes {U} The reduced value.
+   */
   reduce<U>(fn: (acc: U, value: T, index: number) => U, acc: U): U;
 }>;
 
+/**
+ * Converts a List into a ChainableList, enabling chainable operations.
+ * This function allows for fluent method chaining on List types, such as
+ * map, then, and more.
+ *
+ * @template T The type of the value in the original Option for successful case.
+ * @param {List<T>} list The original Option to be converted into a ChainableList.
+ * @returns {ChainableList<T>} A ChainableList, encapsulating the original List and providing chainable methods.
+ */
+function chain<T>(list: List<T>): ChainableList<T> {
+  return {
+    length() {
+      return List.length(list);
+    },
+    toArray() {
+      return List.toArray(list);
+    },
+    isEmpty() {
+      return List.isEmpty(list);
+    },
+    head() {
+      return Option.chain(List.head(list));
+    },
+    tail() {
+      return Option.chain(List.tail(list)).map(List.chain);
+    },
+    prepend(value) {
+      return List.chain(List.prepend(list, value));
+    },
+    append(value) {
+      return List.chain(List.append(list, value));
+    },
+    at(index) {
+      return Result.chain(List.at(list, index));
+    },
+    find(predicate) {
+      return Option.chain(List.find(list, predicate));
+    },
+    map(fn) {
+      return List.chain(List.map(list, fn));
+    },
+    filter(predicate) {
+      return List.chain(List.filter(list, predicate));
+    },
+    filterMap(fn) {
+      return List.chain(List.filterMap(list, fn));
+    },
+    reduce(fn, acc) {
+      return List.reduce(list, fn, acc);
+    },
+  } as const satisfies ChainableList<T>;
+}
+
 export const List = {
+  /**
+   * Converts a List into a ChainableList, enabling chainable operations.
+   * This function allows for fluent method chaining on List types, such as
+   * map, then, and more.
+   *
+   * @template T The type of the value in the original Option for successful case.
+   * @param {List<T>} list The original Option to be converted into a ChainableList.
+   * @returns {ChainableList<T>} A ChainableList, encapsulating the original List and providing chainable methods.
+   */
+  chain,
   /**
    * Gets the length of the list.
    * @template T The type of elements in the list.
@@ -317,7 +457,7 @@ export const List = {
    * @template T The type of elements in the list.
    * @param {List<T>} list The list to search.
    * @param {(value: T) => boolean} predicate The function to test each element.
-   * @returns {Result<T, string>} A Result containing the found element or an error message.
+   * @returns {Option<T>} A Option containing the found element or None if not found.
    */
   find,
   /**

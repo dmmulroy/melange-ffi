@@ -167,11 +167,11 @@ function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
 function unwrap<T, E>(result: Result<T, E>, errorMessage?: string): T {
   try {
     return Melange_result.get_ok(result);
-  } catch (err) {
+  } catch (error) {
     if (errorMessage) {
-      throw new Error(errorMessage);
+      throw new Error(errorMessage, { cause: error });
     }
-    throw err;
+    throw error;
   }
 }
 

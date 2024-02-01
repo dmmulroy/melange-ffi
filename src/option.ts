@@ -99,12 +99,20 @@ function unwrapOr<T>(option: Option<T>, defaultValue: T): T {
  * Unwraps an Option, throwing an error if it is None.
  * @template T The type of the value in the Option.
  * @param {Option<T>} option The Option to unwrap.
+ * @param {string} [errorMessage] An optional error message to use in case of None.
  * @returns {T} The unwrapped value.
  * @throws Will throw an error if the Option is None.
  */
-function unwrap<T>(option: Option<T>): T {
-  // TODO: Add optional error message
-  return Melange_option.get(option);
+function unwrap<T>(option: Option<T>, errorMessage?: string): T {
+  try {
+    return Melange_option.get(option);
+  } catch (error) {
+    if (errorMessage !== undefined) {
+      throw new Error(errorMessage, { cause: error });
+    }
+
+    throw error;
+  }
 }
 
 /**
@@ -119,13 +127,60 @@ function toResult<T, E>(value: Option<T>, error: E): Result<T, E> {
   return Melange_option.to_result(error, value) as unknown as Result<T, E>;
 }
 
+/**
+ * Represents a chinable option type, encapsulating an optional value.
+ * @template T The type of the value.
+ */
 export type ChainableOption<T> = Readonly<{
+  /**
+   * Checks if the Option is a Some.
+   * @template T The type of the value in Option.
+   * @returns {boolean} True if the Option is Some, false otherwise.
+   */
   isSome(): boolean;
+  /**
+   * Checks if the Option is a None.
+   * @template T The type of the value in Option.
+   * @returns {boolean} True if the Option is None, false otherwise.
+   */
   isNone(): boolean;
+  /**
+   * Maps an Option to another using the provided function.
+   * @template T The type of the value in the original Option.
+   * @template U The type of the value in the new Option.
+   * @param {(value: T) => U} fn The mapping function.
+   * @returns {Option<U>} The new Option after applying the mapping function.
+   */
   map<U>(fn: (value: T) => U): ChainableOption<U>;
+  /**
+   * Applies a function to an Option and flattens the result.
+   * @template T The type of the value in the original Option.
+   * @template U The type of the value in the new Option.
+   * @param {(value: T) => Option<U>} fn The function to apply.
+   * @returns {Option<U>} The new Option after applying the function.
+   */
   then<U>(fn: (value: T) => Option<U>): ChainableOption<U>;
+  /**
+   * Unwraps an Option, returning the default value if it is None.
+   * @template T The type of the value, constrained to number.
+   * @param {T} defaultValue The default value to return if Option is None.
+   * @returns {T} The unwrapped value or the default value.
+   */
   unwrapOr(defaultValue: T): T;
+  /**
+   * Unwraps an Option, throwing an error if it is None.
+   * @template T The type of the value in the Option.
+   * @returns {T} The unwrapped value.
+   * @throws Will throw an error if the Option is None.
+   */
   unwrap(errorMessage?: string): T;
+  /**
+   * Converts an Option to a Result.
+   * @template T The type of the value in the Option.
+   * @template E The type of the error in the Result.
+   * @param {E} error The error value to use in case of None.
+   * @returns {Result<T, E>} The resulting Result object.
+   */
   toResult<E>(error: E): Result<T, E>;
 }>;
 
@@ -155,9 +210,8 @@ function chain<T>(option: Option<T>): ChainableOption<T> {
     unwrapOr(defaultValue) {
       return Option.unwrapOr(option, defaultValue);
     },
-    // TODO: Add optional error message
-    unwrap(_errorMessage) {
-      return Option.unwrap(option);
+    unwrap(errorMessage) {
+      return Option.unwrap(option, errorMessage);
     },
     toResult(error) {
       return Option.toResult(option, error);
